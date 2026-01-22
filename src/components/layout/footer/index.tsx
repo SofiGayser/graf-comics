@@ -7,7 +7,7 @@ import { FC, useEffect, useState } from 'react';
 import styles from './index.module.scss';
 
 const Footer: FC = () => {
-  const linkCreateArticle = '/#';
+  const linkCreateArticle = 'https://fasie.ru/?ysclid=mkpcq3ozt7319895918';
   const path = usePathname();
   if (path.includes('comics')) {
     return;
@@ -29,12 +29,12 @@ const Footer: FC = () => {
     <footer className={styles['footer']}>
       <header className={styles['blog__header']}>
         <p className={styles['blog__header-text']}>
-          Данный проект спонсирован <br className={styles['blog__header-br']} />{' '}
-          <span>Фондом Содействия Инноваций</span>
+          Проект создан при поддержке Федерального государственного бюджетного учреждения
+          <br className={styles['blog__header-br']} /> <br />
+          <span>Фонд содействия развитию малых форм предприятий в научно-технической сфере</span>
+          <br />в рамках программы <span>Студенческий стартап</span>
           <br />
-          Создатели платформы выражают благодарность за поддерку и финансирование
-          <br />
-          проекта и привлечение внимания к комикс индустрии Российской Федерации
+          федерального проекта <span>Платформа университетского технологического предпринимательства</span>
         </p>
         <Link className={styles['blog__header-link']} href={linkCreateArticle}>
           Узнать подробнее
