@@ -1,3 +1,5 @@
+@use '../../styles/global' as *;
+
 .achievement-detail {
   &__backlink {
     margin-bottom: 0.75em;
@@ -8,9 +10,25 @@
     background-color: white;
     border-radius: 10px;
     padding-top: 1.72em;
-    padding-bottom: 2.93em;
+    padding-bottom: 1.72em;
+    padding-left: 2.72em;
+    padding-right: 2.72em;
+    display: flex;
+    @include mediaMax($device-M) {
+      flex-direction: column;
+    }
+    flex-direction: row;
+    align-items: center;
   }
-
+  &--view {
+    align-items: center;
+    margin-left: auto;
+    margin-right: auto;
+    order: 1;
+    @include mediaMax($device-M) {
+      order: 2;
+    }
+  }
   &__img {
     display: block;
     margin: 0 auto;
@@ -19,6 +37,14 @@
     border-radius: 10px;
     object-fit: cover;
     margin-bottom: 1.91em;
+    order: 2;
+    @include mediaMax($device-M) {
+      order: 1;
+    }
+    @include mediaMin($device-M) {
+      height: 359px;
+      width: 329px;
+    }
   }
 
   &__title {
@@ -28,7 +54,11 @@
     color: #2d283e;
     margin-bottom: 1.1em;
   }
-
+  &__title > br {
+    @include mediaMin($device-XL) {
+      display: none;
+    }
+  }
   &__description {
     font-size: 0.86rem;
     font-weight: 600;

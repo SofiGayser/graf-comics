@@ -7,7 +7,6 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ message: 'Id not found' }, { status: 400 });
     }
 
-    // Получаем общее количество статей (исключая текущую)
     const totalArticles = await prisma.article.count({
       where: {
         NOT: { id: params.id },
@@ -15,15 +14,12 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       },
     });
 
-    // Если нет других статей, возвращаем пустой массив
     if (totalArticles === 0) {
       return NextResponse.json([]);
     }
 
-    // Ограничиваем количество случайных статей (например, 3)
     const randomLimit = 5;
 
-    // Если статей меньше или равно лимиту, возвращаем все
     if (totalArticles <= randomLimit) {
       const articles = await prisma.article.findMany({
         where: {
@@ -34,7 +30,6 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json(articles);
     }
 
-    // Генерируем случайные пропуски для пагинации
     const randomSkip = Math.floor(Math.random() * (totalArticles - randomLimit));
 
     const randomArticles = await prisma.article.findMany({

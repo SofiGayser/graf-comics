@@ -1,6 +1,5 @@
 'use client';
 import { useGetArticleByIdQuery } from '@/store/api/articles';
-import { Category } from '@prisma/client';
 import cn from 'classnames';
 import { useSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
@@ -15,13 +14,13 @@ import styles from './index.module.scss';
 
 // prettier-ignore
 const categoryObj = {
-    [Category.PROMOTION]:"продвижение комикса", 
-    [Category.SCENARIO]:"сценарий",
-    [Category.LIFESTYLE]:"лайфстайл художника",
-    [Category.CHARACTERS]:"персонажи",
-    [Category.ENVIROMENT]:"окружение",
-    [Category.GRAPHIC]:"графическое наполнение",
-  };
+  "PROMOTION": "продвижение комикса", 
+  "SCENARIO": "сценарий",
+  "LIFESTYLE": "лайфстайл художника",
+  "CHARACTERS": "персонажи",
+  "ENVIROMENT": "окружение",
+  "GRAPHIC": "графическое наполнение",
+};
 
 const Article: FC = () => {
   const obj = useParams<{ id: string }>();
@@ -47,7 +46,16 @@ const Article: FC = () => {
   //@ts-ignore
   const dataJson = JSON.parse(data.content);
   return (
-    <section className="article">
+    <section
+      className="article"
+      style={{
+        backgroundImage: 'url(/bg-article.jpg)',
+        backgroundAttachment: 'fixed',
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        width: '100%',
+      }}
+    >
       <div className={cn('container', styles['padding'])}>
         <BackLink mixClass={[styles['link']]} />
         <div className={styles['inner-container']}>

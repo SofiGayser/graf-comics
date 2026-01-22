@@ -76,7 +76,7 @@
   text-decoration: none;
   font-size: clamp(1.143rem, 0.694vw + 0.762rem, 1.714rem);
   font-weight: 600;
-  line-height: 29px;
+  text-align: right; // добавить это
 
   &--active {
     color: $main-color;
@@ -128,7 +128,7 @@
 
     &__name {
       color: $main-color;
-      font-size: 0.86rem;
+      font-size: clamp(1.143rem, 0.494vw + 0.662rem, 1.714rem);
       font-style: normal;
       font-weight: 600;
       line-height: normal;
@@ -200,10 +200,9 @@
   color: #e54545;
   background: transparent;
   border: none;
-  font-size: 0.86rem;
-  font-style: normal;
+  font-size: clamp(1.143rem, 0.694vw + 0.762rem, 1.714rem);
   font-weight: 600;
-  line-height: normal;
+  line-height: 29px;
 }
 
 .right-menu-btn {
@@ -224,6 +223,7 @@
 }
 
 .logo-mobile {
+  margin-right: 20px;
   @include mediaMin($device-M) {
     display: none;
   }
@@ -247,8 +247,10 @@
 }
 
 .logo-header {
+  margin-right: 50px;
   @include mediaMax($device-L) {
     display: none;
+    margin-right: 0;
   }
 }
 
@@ -272,4 +274,27 @@
 
 .arrow {
   margin-right: 0.3em;
+}
+
+.search {
+  @include mediaMax($size: $device-M) {
+    display: none;
+  }
+  width: 30px;
+  cursor: pointer;
+  :hover {
+    transform: scale(1.1);
+  }
+  &__mobile {
+    @include mediaMin($size: $device-M) {
+      display: none;
+      width: 10px;
+    }
+    &--view {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 20px;
+    }
+  }
 }

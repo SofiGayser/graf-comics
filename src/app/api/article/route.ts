@@ -1,18 +1,20 @@
 import prisma from '@/services/prisma';
 import { IArticle } from '@/store/article/types';
-import { Category } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { NextResponse, type NextRequest } from 'next/server';
 import { options } from '../../api/auth/[...nextauth]/options';
-// prettier-ignore
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 const categoryObj = {
-  "продвижение комикса": Category.PROMOTION,
-  "сценарий": Category.SCENARIO,
-  "лайфстайл художника": Category.LIFESTYLE,
-  "персонажи": Category.CHARACTERS,
-  "окружение": Category.ENVIROMENT,
-  "графическое наполнение": Category.GRAPHIC,
-};
+  'продвижение комикса': 'PROMOTION',
+  сценарий: 'SCENARIO',
+  'лайфстайл художника': 'LIFESTYLE',
+  персонажи: 'CHARACTERS',
+  окружение: 'ENVIROMENT',
+  'графическое наполнение': 'GRAPHIC',
+} as const;
 
 export const GET = async (request: NextRequest) => {
   try {

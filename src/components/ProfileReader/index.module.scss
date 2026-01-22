@@ -3,7 +3,8 @@
 .profile-header {
   @include themeSectionBackground;
   margin-bottom: 1.1em;
-
+  @include mediaMin($device-M) {
+  }
   @include mediaMin(1490px) {
     width: 1490px;
     margin: 0 auto 50px;
@@ -26,9 +27,8 @@
     top: 50px;
     width: 85px;
     height: 85px;
-    border: 6px solid white;
+    @include themeAvatarBorder;
     border-radius: 200px;
-
     @include mediaMin(1490px) {
       top: 116px;
       width: 232px;
@@ -76,7 +76,7 @@
 
     @include mediaMin(1490px) {
       font-size: 1.715rem;
-      margin-bottom: 0.35em;
+      margin-bottom: 1.2em;
     }
   }
 
@@ -86,7 +86,7 @@
     font-weight: 600;
     @include flex($gap: 0.5em, $align: end);
     line-height: normal;
-    margin-bottom: 2.5em;
+    margin-bottom: 0.8em;
     cursor: pointer;
 
     @include mediaMin(1490px) {
@@ -125,14 +125,14 @@
   &__input-search-container {
     display: none;
     align-items: center;
-    border: 2px solid #564f70;
     width: 100%;
-    border-radius: 20px;
+    border-radius: 999999px;
     padding-top: 0.86em;
     padding-bottom: 0.86em;
+    padding-right: 0.86em;
     margin-top: 3.22em;
     margin-bottom: 3.5em;
-
+    background-color: #f2effe;
     @include mediaMin(1490px) {
       display: flex;
     }
@@ -142,12 +142,13 @@
     width: 100%;
     height: 100%;
     border: none;
+    background-color: #f2effe;
   }
 
   &__input-search::placeholder {
     font-size: 1.43rem;
     font-weight: 500;
-    color: #2d283e;
+    color: #cabdfc;
   }
 
   &__input-search[type='text'] {
@@ -243,4 +244,35 @@
   text-align: center;
   border-radius: 18px;
   margin-bottom: 20px;
+  @include mediaMin($device-M) {
+    display: none;
+  }
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #7a5af8;
+  font-size: 1.1rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+
+  p {
+    margin-bottom: 1rem;
+    color: #666;
+    font-size: 1.1rem;
+  }
+}
+
+.browse-link {
+  color: #7a5af8;
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }

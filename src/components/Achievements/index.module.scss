@@ -38,6 +38,9 @@
     font-weight: 600;
     @include themeText;
     margin-bottom: 1.42em;
+    @include mediaMax($device-XL) {
+      text-align: center;
+    }
     padding: 0px 1.02em;
     &--author {
       margin-top: 2.5em;

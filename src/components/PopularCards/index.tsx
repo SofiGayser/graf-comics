@@ -6,14 +6,17 @@ import PopularComics from '../PopularComics';
 import styles from './index.module.scss';
 import { PopularCardsProps } from './types';
 
-const PopularCards: FC<PopularCardsProps> = ({ titleText, Icon }) => {
+const PopularCards: FC<PopularCardsProps> = ({ titleText, iconSrc }) => {
+  // меняем Icon на iconSrc
   const { theme } = useTheme();
 
   return (
     <section className={styles['section']}>
       <div className={styles['container']}>
         <h1 className={styles['container__slogan']}>
-          <Icon
+          <img
+            src={iconSrc}
+            alt=""
             className={cn(styles['icon'], {
               [styles['icon--dark']]: theme === 'dark',
             })}

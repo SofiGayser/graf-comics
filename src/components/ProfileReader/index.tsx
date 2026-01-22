@@ -3,13 +3,44 @@ import MoreDetailsPopup from '@/components/shared/MoreDetailsPopup';
 import cn from 'classnames';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Cards, Tabs } from '../UI';
 import { ProfileFilters, Stats } from '../shared';
 import styles from './index.module.scss';
-const ProfileReader: FC = () => {
-  const { data } = useSession();
 
+// Обновляем интерфейс Bookmark для включения статуса
+interface Bookmark {
+  id: string;
+  userId: string;
+  comicsId: string;
+  status: 'READING' | 'PLANNED' | 'COMPLETED' | 'DROPPED';
+  createdAt: Date;
+  updatedAt: Date;
+  comics: {
+    id: string;
+    title: string;
+    covers: string[];
+    description: string;
+    genres: string[];
+    status: string;
+  };
+}
+
+interface ICard {
+  id: string;
+  name: string;
+  type?: string;
+  cover?: string;
+  comicsId?: string;
+  bookmarkStatus?: string;
+}
+
+const ProfileReader: FC = () => {
+  const { data: session } = useSession();
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedStatus, setSelectedStatus] = useState<string>('Читаю');
+  const [error, setError] = useState<string | null>(null);
   const [isOpenFilters, setIsOpenFilters] = useState(false);
   const handleOpenFiltersPopup = () => {
     setIsOpenFilters(true);
@@ -24,6 +55,117 @@ const ProfileReader: FC = () => {
     setIsOpenMoreDetailsPopup(false);
   };
 
+  // Функция для получения закладок с фильтрацией по статусу
+  // Временная версия для тестирования
+  const fetchBookmarks = async (status: string = 'Все') => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      console.log('🔄 Fetching bookmarks with status:', status);
+
+      // Преобразуем русские названия в значения enum
+      const statusMap: { [key: string]: string } = {
+        Все: 'ALL',
+        Читаю: 'READING',
+        'В планах': 'PLANNED',
+        Прочитано: 'COMPLETED',
+        Брошено: 'DROPPED',
+      };
+
+      const statusValue = statusMap[status] || 'ALL';
+
+      // Формируем URL с параметром status
+      const url = `/api/bookmarks${statusValue !== 'ALL' ? `?status=${statusValue}` : ''}`;
+
+      console.log('📡 Making request to:', url);
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Bookmarks received:', data.length);
+
+      setBookmarks(data);
+    } catch (error) {
+      console.error('❌ Error fetching bookmarks:', error);
+      setError(error instanceof Error ? error.message : 'Произошла ошибка при загрузке закладок');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (session?.user) {
+      fetchBookmarks(selectedStatus);
+    }
+  }, [session]);
+
+  // Обработчик выбора статуса из фильтров
+  const handleStatusChange = (status: string) => {
+    console.log('🎯 Status changed to:', status);
+    setSelectedStatus(status);
+    fetchBookmarks(status);
+  };
+
+  const handleResetFilters = () => {
+    setSelectedStatus('Все');
+    fetchBookmarks('Все');
+  };
+
+  // Функция для удаления закладки
+  const handleRemoveBookmark = async (comicsId: string) => {
+    try {
+      const response = await fetch(`/api/comics/${comicsId}/bookmark`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Обновляем список закладок
+        fetchBookmarks(selectedStatus);
+      }
+    } catch (error) {
+      console.error('Error removing bookmark:', error);
+    }
+  };
+
+  // Функция для изменения статуса закладки
+  const handleUpdateBookmarkStatus = async (comicsId: string, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/comics/${comicsId}/bookmark`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        // Обновляем список закладок
+        fetchBookmarks(selectedStatus);
+      }
+    } catch (error) {
+      console.error('Error updating bookmark status:', error);
+    }
+  };
+
+  // Преобразуем закладки в формат для Cards компонента
+  const bookmarkCards = bookmarks.map((bookmark) => ({
+    id: bookmark.id,
+    name: bookmark.comics.title,
+    image: bookmark.comics.covers[0] || '/default-comics-cover.png',
+    description: bookmark.comics.description,
+    genres: bookmark.comics.genres,
+    status: bookmark.comics.status,
+    comicsId: bookmark.comics.id,
+    cover: bookmark.comics.covers[0],
+    bookmarkStatus: bookmark.status,
+    onRemove: () => handleRemoveBookmark(bookmark.comics.id),
+  }));
+
   return (
     <>
       <MoreDetailsPopup mixClass={[]} isOpen={isOpenMoreDetailsPopup} onClose={handleCloseMoreDetailsPopup} />
@@ -33,7 +175,7 @@ const ProfileReader: FC = () => {
           <img src="./profile-skeleton.svg" alt="avatar" className={styles['profile__img']} />
         </div>
         <div className={cn(styles['profile__container'], 'container')}>
-          <p className={styles['profile__name']}>{data?.user?.name || 'Никнейм'}</p>
+          <p className={styles['profile__name']}>{session?.user?.name || 'Никнейм'}</p>
           <p className={styles['profile__status']}>Статус</p>
           <p className={styles['profile__details']} onClick={handleOpenMoreDetailsPopup}>
             Подробнее
@@ -74,6 +216,10 @@ const ProfileReader: FC = () => {
                 name: 'Комментарии',
                 count: 0,
               },
+              {
+                name: 'Закладки',
+                count: bookmarks.length,
+              },
             ]}
           />
         </div>
@@ -83,6 +229,7 @@ const ProfileReader: FC = () => {
         <section className={styles['tabs']}>
           <div className={cn(styles['tabs__container'], 'container')}>
             <Tabs mixClass={[styles['tabs__items']]} tabs={['Избранное', 'Закладки', 'Тайтлы']}>
+              {/* Вкладка "Избранное" с фильтрацией по статусам */}
               <div>
                 <div className={styles['profile__input-search-container']}>
                   <svg
@@ -90,13 +237,13 @@ const ProfileReader: FC = () => {
                     width="28"
                     height="28"
                     viewBox="0 0 28 28"
-                    fill="none"
+                    fill="#7A5AF8"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g clip-path="url(#clip0_114_272)">
+                    <g clipPath="url(#clip0_114_272)">
                       <path
                         d="M27.6584 26.0085L20.6946 19.0447C22.5923 16.7237 23.5253 13.7621 23.3007 10.7725C23.0761 7.78286 21.711 4.99394 19.4878 2.9826C17.2645 0.971252 14.3533 -0.108636 11.3562 -0.0336988C8.35904 0.0412383 5.50539 1.26527 3.38545 3.38521C1.26551 5.50514 0.0414824 8.3588 -0.0334547 11.3559C-0.108392 14.353 0.971496 17.2643 2.98284 19.4875C4.99419 21.7107 7.7831 23.0759 10.7727 23.3005C13.7623 23.5251 16.7239 22.5921 19.0449 20.6943L26.0087 27.6582C26.2288 27.8707 26.5235 27.9883 26.8294 27.9856C27.1353 27.983 27.4279 27.8603 27.6442 27.6439C27.8605 27.4276 27.9832 27.135 27.9859 26.8291C27.9885 26.5232 27.8709 26.2285 27.6584 26.0085ZM11.6669 21C9.82094 21 8.01644 20.4526 6.48158 19.427C4.94672 18.4015 3.75044 16.9438 3.04402 15.2384C2.33761 13.5329 2.15278 11.6563 2.5129 9.84581C2.87303 8.03533 3.76195 6.37228 5.06724 5.06699C6.37253 3.7617 8.03557 2.87279 9.84606 2.51266C11.6565 2.15253 13.5332 2.33736 15.2386 3.04378C16.9441 3.7502 18.4017 4.94648 19.4273 6.48133C20.4528 8.01619 21.0002 9.8207 21.0002 11.6667C20.9975 14.1412 20.0132 16.5135 18.2635 18.2633C16.5138 20.013 14.1414 20.9972 11.6669 21Z"
-                        fill="#2D283E"
+                        fill="#7A5AF8"
                       />
                     </g>
                     <defs>
@@ -133,24 +280,27 @@ const ProfileReader: FC = () => {
                       fill="#7A5AF8"
                     />
                   </svg>
+                  {/* Показываем текущий выбранный статус на кнопке */}
+                  {selectedStatus !== 'Все' && ` • ${selectedStatus}`}
                 </button>
 
-                <Cards
-                  mixClass={[]}
-                  cards={[
-                    { name: 'Избранное' },
-                    { name: 'Избранное' },
-                    { name: 'Избранное' },
-                    { name: 'Избранное' },
-                    { name: 'Избранное' },
-                    { name: 'Избранное' },
-                    { name: 'Избранное' },
-                    { name: 'Избранное' },
-                    { name: 'Избранное' },
-                  ]}
-                />
+                {isLoading ? (
+                  <div className={styles['loading']}>Загрузка закладок...</div>
+                ) : bookmarks.length === 0 ? (
+                  <div className={styles['empty-state']}>
+                    <p>
+                      {selectedStatus === 'Все'
+                        ? 'У вас пока нет закладок'
+                        : `Нет закладок в категории "${selectedStatus}"`}
+                    </p>
+                    <Link href="/catalog" className={styles['browse-link']}>
+                      Перейти в каталог
+                    </Link>
+                  </div>
+                ) : (
+                  <Cards mixClass={[styles['profile__cards']]} cards={bookmarkCards} />
+                )}
               </div>
-
               <div>
                 <div className={styles['profile__input-search-container']}>
                   <svg
@@ -158,13 +308,13 @@ const ProfileReader: FC = () => {
                     width="28"
                     height="28"
                     viewBox="0 0 28 28"
-                    fill="none"
+                    fill="#7A5AF8"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g clip-path="url(#clip0_114_272)">
+                    <g clipPath="url(#clip0_114_272)">
                       <path
                         d="M27.6584 26.0085L20.6946 19.0447C22.5923 16.7237 23.5253 13.7621 23.3007 10.7725C23.0761 7.78286 21.711 4.99394 19.4878 2.9826C17.2645 0.971252 14.3533 -0.108636 11.3562 -0.0336988C8.35904 0.0412383 5.50539 1.26527 3.38545 3.38521C1.26551 5.50514 0.0414824 8.3588 -0.0334547 11.3559C-0.108392 14.353 0.971496 17.2643 2.98284 19.4875C4.99419 21.7107 7.7831 23.0759 10.7727 23.3005C13.7623 23.5251 16.7239 22.5921 19.0449 20.6943L26.0087 27.6582C26.2288 27.8707 26.5235 27.9883 26.8294 27.9856C27.1353 27.983 27.4279 27.8603 27.6442 27.6439C27.8605 27.4276 27.9832 27.135 27.9859 26.8291C27.9885 26.5232 27.8709 26.2285 27.6584 26.0085ZM11.6669 21C9.82094 21 8.01644 20.4526 6.48158 19.427C4.94672 18.4015 3.75044 16.9438 3.04402 15.2384C2.33761 13.5329 2.15278 11.6563 2.5129 9.84581C2.87303 8.03533 3.76195 6.37228 5.06724 5.06699C6.37253 3.7617 8.03557 2.87279 9.84606 2.51266C11.6565 2.15253 13.5332 2.33736 15.2386 3.04378C16.9441 3.7502 18.4017 4.94648 19.4273 6.48133C20.4528 8.01619 21.0002 9.8207 21.0002 11.6667C20.9975 14.1412 20.0132 16.5135 18.2635 18.2633C16.5138 20.013 14.1414 20.9972 11.6669 21Z"
-                        fill="#2D283E"
+                        fill="#7A5AF8"
                       />
                     </g>
                     <defs>
@@ -174,23 +324,21 @@ const ProfileReader: FC = () => {
                     </defs>
                   </svg>
 
-                  <input type="text" placeholder={'Поиск...'} className={styles['profile__input-search']} />
+                  <input type="text" placeholder={'Поиск закладок...'} className={styles['profile__input-search']} />
                 </div>
 
-                <Cards
-                  mixClass={[styles['profile__cards']]}
-                  cards={[
-                    { name: 'Записи' },
-                    { name: 'Записи' },
-                    { name: 'Записи' },
-                    { name: 'Записи' },
-                    { name: 'Записи' },
-                    { name: 'Записи' },
-                    { name: 'Записи' },
-                    { name: 'Записи' },
-                    { name: 'Записи' },
-                  ]}
-                />
+                {isLoading ? (
+                  <div className={styles['loading']}>Загрузка закладок...</div>
+                ) : bookmarks.length === 0 ? (
+                  <div className={styles['empty-state']}>
+                    <p>У вас пока нет закладок</p>
+                    <Link href="/catalog" className={styles['browse-link']}>
+                      Перейти в каталог
+                    </Link>
+                  </div>
+                ) : (
+                  <Cards mixClass={[styles['profile__cards']]} cards={bookmarkCards} />
+                )}
               </div>
 
               <button className={styles['tabs__public-btn']}>Опубликовать</button>
@@ -199,26 +347,10 @@ const ProfileReader: FC = () => {
         </section>
 
         <section className={styles['filtration']}>
-          {/* <Filters
-            filters={[
-              {
-                filterType: '',
-              },
-            ]}
-          /> */}
-          {/* <div className={styles['filter']}>
-            <Filters
-              filters={[
-                { text: 'Вкладки', colorClass: 'author', filters: tabs, filterType: 'default', isActive: false },
-                { text: 'Сортировать', colorClass: 'author', filters: sort, filterType: 'sort', isActive: false },
-              ]}
-              mixClass={[styles['catalog__filter']]}
-            />
-          </div> */}
           <ProfileFilters
             mixClass={[]}
             isOpen={isOpenFilters}
-            onClose={handleCloseFiltersPopup} // функция для закрытия
+            onClose={handleCloseFiltersPopup}
             tabArray={['Все', 'Читаю', 'В планах', 'Прочитано', 'Брошено']}
             sortArray={[
               'по названию (А-Я)',
@@ -231,6 +363,10 @@ const ProfileReader: FC = () => {
               'по просмотрам',
               'по количеству лайков',
             ]}
+            selectedTab={selectedStatus}
+            onTabChange={handleStatusChange}
+            onReset={handleResetFilters}
+            showCreateTab={false}
           />
         </section>
       </div>

@@ -4,9 +4,10 @@
   margin-bottom: 1em;
   padding-top: 1.2em;
   padding-bottom: 1.2em;
-  background: white;
+  @include themeSectionBackground;
   border-radius: 20px;
   font-weight: 600;
+  @include themeText;
 
   @include mediaMin($device-M) {
     margin-bottom: 3.5em;
@@ -44,7 +45,7 @@
   }
 
   &__count {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     color: $main-color;
     margin-right: 5px;
   }
@@ -63,12 +64,12 @@
 
   &__h1 {
     text-align: center;
-    font-size: 1.4rem;
+    font-size: 1.6rem;
   }
 
   &__h3 {
     text-align: center;
-    font-size: 0.86rem;
+    font-size: 1.06rem;
     margin-top: 20px;
     margin-bottom: 12px;
   }

@@ -257,7 +257,7 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1em;
   width: 100%;
 
@@ -310,6 +310,14 @@
   overflow: hidden;
   @include flex($wrap: nowrap, $gap: 0.4em);
 
+  /* Исправленные свойства фона */
+  background-size: cover; // вместо contain
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed; // опционально, для параллакс эффекта
+  min-height: 400px; // минимальная высота секции
+  @include themeBackgroundBlogSrc;
+
   @include mediaMin($device-M) {
     margin-bottom: 3.5em;
     padding-top: 5.3em;
@@ -317,6 +325,12 @@
     padding-bottom: 5.4em;
     padding-left: clamp(5em, 12.587vw - 1.905em, 15.357em);
     padding-right: clamp(5em, 2.691vw + 3.524em, 7.214em);
+    min-height: 600px; // увеличенная высота для десктопа
+  }
+
+  // Для очень больших экранов
+  @include mediaMin($device-L) {
+    background-size: 100% auto; // или cover в зависимости от нужного эффекта
   }
 }
 
@@ -340,7 +354,7 @@
   }
 
   &__slogan {
-    @include themeText;
+    color: white;
     font-size: clamp(1.43rem, 1rem + 1.6vw, 3.42rem);
     font-weight: 600;
     line-height: normal;
@@ -355,7 +369,7 @@
   }
 
   &__text {
-    @include themeText;
+    color: white;
     text-align: center;
     font-size: clamp(0.86rem, 0.685rem + 0.75vw, 1.71rem);
     font-weight: 500;

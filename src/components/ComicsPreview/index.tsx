@@ -5,27 +5,131 @@ import { useTheme } from '@/context/themeProvider';
 import { IComicsComment } from '@/store/comics/types';
 import cn from 'classnames';
 import { useRouter } from 'next/navigation';
-import { FC, useContext, useState } from 'react';
+import { FC, useContext, useEffect, useState } from 'react';
 import { Chapters, SliderPreview, Tabs } from '../UI';
 import { ComicsComment, FilterBarComponent, SimilarComics } from './components';
 import { comicsData, comments } from './data';
 import styles from './index.module.scss';
 import { ComicsPreviewProps } from './types';
+
 const ComicsPreview: FC<ComicsPreviewProps> = ({ comics = comicsData, isBackend = false }) => {
-  const { setActiveBookMarks } = useContext(ctx);
+  const { setActiveBookMarks, setCurrentComicsId } = useContext(ctx);
   const { banner, covers, description, genres, title, toms, author, status, rating, id } = comics;
 
   const likes = comics?.likes || comicsData['likes'];
-
+  const handleOpenBookmarks = () => {
+    setCurrentComicsId(id);
+    setActiveBookMarks(true);
+  };
   const { theme } = useTheme();
+  const [newCommentText, setNewCommentText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [isVisibleMore, setIsVisibleMore] = useState<boolean>(false);
+  const [comicsStats, setComicsStats] = useState({
+    views: 0,
+    likes: likes.length,
+    bookmarks: 0,
+  });
+  const [comicsComments, setComicsComments] = useState<IComicsComment[]>([]);
 
   const router = useRouter();
+
   //сортировка
   const [commentsRender, setCommentsRender] = useState(comments);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
+  const [isBookmarkPopupOpen, setIsBookmarkPopupOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState('PLANNED');
+  const handleAddToBookmark = async (status: string) => {
+    try {
+      const response = await fetch(`/api/comics/${id}/bookmark`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (response.ok) {
+        console.log(`Добавлено в "${status}"`);
+        setIsBookmarkPopupOpen(false);
+        // Можно показать уведомление об успехе
+      } else {
+        console.error('Ошибка при добавлении в закладки');
+      }
+    } catch (error) {
+      console.error('Ошибка при добавлении в закладки:', error);
+    }
+  };
+
+  const bookmarkOptions = [
+    { value: 'READING', label: 'Читаю' },
+    { value: 'PLANNED', label: 'В планах' },
+    { value: 'COMPLETED', label: 'Прочитано' },
+    { value: 'DROPPED', label: 'Брошено' },
+  ];
+  // ОБНОВЛЕННЫЙ: Объединенная загрузка данных
+  useEffect(() => {
+    const loadData = async () => {
+      if (!id) return;
+
+      try {
+        console.log('🔄 Loading data for comics:', id);
+
+        // 1. Сначала увеличиваем просмотры
+        const viewResponse = await fetch(`/api/comics/${id}/view`, {
+          method: 'POST',
+        });
+
+        if (viewResponse.ok) {
+          const viewData = await viewResponse.json();
+          console.log('✅ View tracked:', viewData);
+        } else {
+          console.error('❌ View tracking failed');
+        }
+
+        // 2. Затем загружаем обновленную статистику
+        const statsResponse = await fetch(`/api/comics/${id}/stats`);
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json();
+          console.log('📊 Stats loaded:', statsData);
+          setComicsStats(statsData);
+        } else {
+          console.error('❌ Stats loading failed');
+          // Fallback данные
+          setComicsStats({
+            views: 1250,
+            likes: likes.length,
+            bookmarks: 42,
+          });
+        }
+
+        // 3. Загружаем комментарии
+        const commentsResponse = await fetch(`/api/comics/${id}/comments`);
+        if (commentsResponse.ok) {
+          const commentsData = await commentsResponse.json();
+          setComicsComments(commentsData);
+          setCommentsRender(commentsData);
+        } else {
+          setComicsComments(comments);
+          setCommentsRender(comments);
+        }
+      } catch (error) {
+        console.error('❌ Error loading data:', error);
+        // Fallback данные при ошибке
+        setComicsStats({
+          views: 1250,
+          likes: likes.length,
+          bookmarks: 42,
+        });
+        setComicsComments(comments);
+        setCommentsRender(comments);
+      }
+    };
+
+    loadData();
+  }, [id, likes]);
 
   const sortComments = (criteria: string, commentsRender: IComicsComment[]) => {
     const sorted = [...commentsRender];
@@ -46,7 +150,7 @@ const ComicsPreview: FC<ComicsPreviewProps> = ({ comics = comicsData, isBackend 
     setCommentsRender(sorted);
   };
 
-  const handleSortSelect = (criteria) => {
+  const handleSortSelect = (criteria: string) => {
     setSortBy(criteria);
     sortComments(criteria, commentsRender);
     setIsModalOpen(false);
@@ -56,16 +160,61 @@ const ComicsPreview: FC<ComicsPreviewProps> = ({ comics = comicsData, isBackend 
     switch (sortBy) {
       case 'new':
         return 'Новое';
-        break;
       case 'oldest':
         return 'Старое';
-        break;
       case 'popular':
         return 'Популярное';
-        break;
+      default:
+        return 'Новое';
     }
   }
+  const handleSubmitComment = async () => {
+    if (!newCommentText.trim() || isSubmitting) return;
 
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch(`/api/comics/${id}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: newCommentText.trim(),
+        }),
+      });
+
+      if (response.ok) {
+        const newComment = await response.json();
+
+        // Добавляем новый комментарий в начало списка
+        setComicsComments((prev) => [newComment, ...prev]);
+        setCommentsRender((prev) => [newComment, ...prev]);
+
+        // Очищаем поле ввода
+        setNewCommentText('');
+
+        // Показываем уведомление об успехе
+        console.log('Комментарий успешно добавлен');
+      } else {
+        const error = await response.json();
+        console.error('Ошибка при отправке комментария:', error);
+        // Показываем ошибку пользователю
+      }
+    } catch (error) {
+      console.error('Ошибка при отправке комментария:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Обработчик нажатия Enter в поле ввода
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmitComment();
+    }
+  };
   return (
     <section className={styles['comics-page']}>
       <div
@@ -102,7 +251,7 @@ const ComicsPreview: FC<ComicsPreviewProps> = ({ comics = comicsData, isBackend 
                   mask="url(#path-1-inside-1_781_4146)"
                 />
               </svg>
-              0
+              {comicsStats.views.toLocaleString()}
             </p>
             <p className={styles['comics-page__likes']}>
               <svg
@@ -119,27 +268,9 @@ const ComicsPreview: FC<ComicsPreviewProps> = ({ comics = comicsData, isBackend 
                   strokeWidth="1.1"
                 />
               </svg>
-              {likes.length}
+              {comicsStats.likes.toLocaleString()}
             </p>
-            <p className={styles['comics-page__starred']}>
-              <svg
-                className={cn(theme === 'dark' && styles['svg--dark'])}
-                xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="11"
-                viewBox="0 0 12 11"
-                fill="none"
-              >
-                <path
-                  d="M6.46632 1.24957L7.41606 4.17506H10.4871C10.5613 4.17554 10.6335 4.19936 10.6934 4.24314C10.7534 4.28693 10.798 4.34845 10.821 4.419C10.844 4.48956 10.8442 4.56556 10.8216 4.63624C10.799 4.70693 10.7548 4.76872 10.6951 4.81285L8.2133 6.61529L9.16304 9.53385C9.18708 9.60539 9.18759 9.68273 9.16451 9.75458C9.14143 9.82643 9.09596 9.88901 9.03477 9.93316C8.97357 9.97732 8.89985 10.0007 8.82439 9.99998C8.74893 9.99923 8.67569 9.97436 8.61538 9.929L6.13356 8.12656L3.65174 9.929C3.59143 9.97436 3.51819 9.99923 3.44273 9.99998C3.36727 10.0007 3.29355 9.97732 3.23235 9.93316C3.17116 9.88901 3.12569 9.82643 3.10261 9.75458C3.07953 9.68273 3.08004 9.60539 3.10408 9.53385L4.05382 6.61529L1.572 4.81285C1.51234 4.76872 1.46808 4.70693 1.44549 4.63624C1.4229 4.56556 1.42312 4.48956 1.44613 4.419C1.46914 4.34845 1.51376 4.28693 1.57368 4.24314C1.6336 4.19936 1.70577 4.17554 1.77998 4.17506H4.85106L5.8008 1.24957C5.8218 1.17757 5.86559 1.11432 5.92559 1.06932C5.98559 1.02433 6.05856 1 6.13356 1C6.20856 1 6.28153 1.02433 6.34153 1.06932C6.40153 1.11432 6.44532 1.17757 6.46632 1.24957Z"
-                  stroke="#2D283E"
-                  strokeWidth="1.1"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              0
-            </p>
+
             <p className={styles['comics-page__bookmarks']}>
               <svg
                 className={cn(theme === 'dark' && styles['svg--dark'])}
@@ -155,11 +286,11 @@ const ComicsPreview: FC<ComicsPreviewProps> = ({ comics = comicsData, isBackend 
                   strokeWidth="1.1"
                 />
               </svg>
-              0
+              {comicsStats.bookmarks.toLocaleString()}
             </p>
           </div>
           <div className={styles['buttons']}>
-            <button onClick={() => setActiveBookMarks(true)} className={styles['buttons__bookmark']}>
+            <button onClick={handleOpenBookmarks} className={styles['buttons__bookmark']}>
               В избранное
             </button>
             <button onClick={() => router.push(`/comics/${id}`)} className={styles['buttons__read']}>
@@ -257,33 +388,43 @@ const ComicsPreview: FC<ComicsPreviewProps> = ({ comics = comicsData, isBackend 
                     placeholder="Написать комментарий..."
                     type="text"
                     id="send-message-btn"
+                    value={newCommentText}
+                    onChange={(e) => setNewCommentText(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    disabled={isSubmitting}
                   />
 
-                  <button className={styles['comments__send']}>
-                    <svg width="24" height="24" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="22" height="22" rx="11" fill="#7A5AF8" />
-                      <path
-                        d="M11 6L11 16"
-                        stroke="white"
-                        stroke-width="1.42857"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                      <path
-                        d="M16 11L11 6L6 11"
-                        stroke="white"
-                        stroke-width="1.42857"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                    </svg>
+                  <button
+                    className={styles['comments__send']}
+                    onClick={handleSubmitComment}
+                    disabled={isSubmitting || !newCommentText.trim()}
+                  >
+                    {isSubmitting ? (
+                      <span>...</span> // или индикатор загрузки
+                    ) : (
+                      <svg width="24" height="24" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="22" height="22" rx="11" fill="#7A5AF8" />
+                        <path
+                          d="M11 6L11 16"
+                          stroke="white"
+                          stroke-width="1.42857"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M16 11L11 6L6 11"
+                          stroke="white"
+                          stroke-width="1.42857"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    )}
                   </button>
                 </label>
-                <p className={styles['comments__counter']}>{comments.length} комментариев</p>
+                <p className={styles['comments__counter']}>{comicsComments.length} комментариев</p>
                 {commentsRender.map((comment) => (
-                  <>
-                    <ComicsComment key={comment.id} comment={comment} />
-                  </>
+                  <ComicsComment key={comment.id} comment={comment} />
                 ))}
                 <button className={styles['buttons__download']}>Загрузить еще</button>
               </div>

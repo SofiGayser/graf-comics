@@ -1,7 +1,9 @@
 'use client';
 
+import { getUserProfile, updateUserProfile } from '@/services/userApi';
 import cn from 'classnames';
-import { FC, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { FC, useEffect, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Tabs } from '../UI';
@@ -9,115 +11,225 @@ import ProfileSettings from './components/ProfileSettings';
 import SecuritySettings from './components/SecuritySettings';
 import SiteSettings from './components/SiteSettings';
 import styles from './index.module.scss';
-import { BackendData, EditProfileFormSchema, LocalStorageData } from './types';
+import { BackendData, EditProfileFormSchema, LocalStorageData, UserProfileResponse } from './types';
+
 const EditProfile: FC = () => {
-  const getDefaultValues = async (): Promise<EditProfileFormSchema> => {
-    const fetchBackendData = async (): Promise<BackendData> => {
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Эмуляция задержки
-      const backendValues: BackendData = {
-        username: 'RuslanitoSS',
-        about: 'Lorem20 не рабоатет',
-        gender: 'male',
-        birthDate: '12.12.12',
-        residenceName: '',
-        email: 'supro@ha.com',
-        currentPassword: 'qwerty',
-        newPassword: '',
-        newPasswordRepeat: '',
-      };
-      return backendValues;
+  const { data: session, update: updateSession } = useSession();
+  const [isLoading, setIsLoading] = useState(true);
+
+  const mapBackendToFormData = (backendData: UserProfileResponse): BackendData => {
+    return {
+      username: backendData.name || '',
+      about: backendData.about || '',
+      gender: (backendData.gender?.toLowerCase() as 'male' | 'female' | 'not_stated') || 'not_stated',
+      birthDate: backendData.birthDate ? new Date(backendData.birthDate).toLocaleDateString('ru-RU') : '',
+      residenceName: backendData.residenceName || '',
+      email: backendData.email || '',
+      currentPassword: '',
+      newPassword: '',
+      newPasswordRepeat: '',
     };
-
-    // Получение данных с бэкенда
-    const backendData = await fetchBackendData();
-    // Получение данных с бэкенда
-    /* Получем поля:
-    Имя
-    О себе
-    Пол
-    Дата рождения
-    Ваш город
-    E-mail
-    Пароль
-     */
-    // Получение данных из localStorage
-    const localStorageValues: LocalStorageData = {
-      hideSubscribes: JSON.parse(localStorage.getItem('hideSubscribes') || 'false'),
-      privateProfile: JSON.parse(localStorage.getItem('privateProfile') || 'false'),
-      hideMatureContent: JSON.parse(localStorage.getItem('hideMatureContent') || 'false'),
-      darkMode: JSON.parse(localStorage.getItem('darkMode') || 'false'),
-      hideNotificationsSubscribes: JSON.parse(localStorage.getItem('hideNotificationsSubscribes') || 'false'),
-      hideNotificationsComments: JSON.parse(localStorage.getItem('hideNotificationsComments') || 'false'),
-      hideNotificationsPaidContent: JSON.parse(localStorage.getItem('hideNotificationsPaidContent') || 'false'),
-      hideNotificationsLikes: JSON.parse(localStorage.getItem('hideNotificationsLikes') || 'false'),
-      hideNotificationsGifts: JSON.parse(localStorage.getItem('hideNotificationsGifts') || 'false'),
-      hideNotificationsNewPosts: JSON.parse(localStorage.getItem('hideNotificationsNewPosts') || 'false'),
-      showNotificationsListsReading: JSON.parse(localStorage.getItem('showNotificationsListsReading') || 'false'),
-      showNotificationsListsRead: JSON.parse(localStorage.getItem('showNotificationsListsRead') || 'false'),
-      showNotificationsListsPlanned: JSON.parse(localStorage.getItem('showNotificationsListsPlanned') || 'false'),
-      showNotificationsListsLiked: JSON.parse(localStorage.getItem('showNotificationsListsLiked') || 'false'),
-      showNotificationsListsDropped: JSON.parse(localStorage.getItem('showNotificationsListsDropped') || 'false'),
-      emailNotificationsUpdates: JSON.parse(localStorage.getItem('emailNotificationsUpdates') || 'false'),
-      emailNotificationsSurveys: JSON.parse(localStorage.getItem('emailNotificationsSurveys') || 'false'),
-      emailNotificationsReports: JSON.parse(localStorage.getItem('emailNotificationsReports') || 'false'),
-    };
-
-    // Объединение данных из бэкенда и localStorage
-    const defaultValues: EditProfileFormSchema = Object.assign({}, backendData, localStorageValues);
-
-    return defaultValues;
   };
 
-  /* Отрисовываем форму сначала пустой. потом обновляем значения, когда их получим */
+  const mapBackendToLocalStorageData = (backendData: UserProfileResponse): LocalStorageData => {
+    return {
+      hideSubscribes: backendData.closedSubscribers,
+      privateProfile: backendData.closedProfile,
+      hideMatureContent: !backendData.showMatureContent,
+      darkMode: JSON.parse(localStorage.getItem('darkMode') || 'false'),
+      hideNotificationsSubscribes: !backendData.showNotificationsSubscribes,
+      hideNotificationsComments: !backendData.showNotificationsComments,
+      hideNotificationsPaidContent: !backendData.showNotificationsPaidContent,
+      hideNotificationsLikes: !backendData.showNotificationsLikes,
+      hideNotificationsGifts: !backendData.showNotificationsGifts,
+      hideNotificationsNewPosts: !backendData.showNotificationsNewPosts,
+      showNotificationsListsReading: backendData.showNotificationsListsReading,
+      showNotificationsListsRead: backendData.showNotificationsListsRead,
+      showNotificationsListsPlanned: backendData.showNotificationsListsPlanned,
+      showNotificationsListsLiked: backendData.showNotificationsListsLiked,
+      showNotificationsListsDropped: backendData.showNotificationsListsDropped,
+      emailNotificationsUpdates: backendData.emailNotificationsUpdates,
+      emailNotificationsSurveys: backendData.emailNotificationsSurveys,
+      emailNotificationsReports: backendData.emailNotificationsReports,
+    };
+  };
+
+  const getDefaultValues = async (): Promise<EditProfileFormSchema> => {
+    try {
+      const backendData = await getUserProfile(session.user.id);
+      const backendValues = mapBackendToFormData(backendData);
+      const localStorageValues = mapBackendToLocalStorageData(backendData);
+      return { ...backendValues, ...localStorageValues };
+    } catch (error) {
+      console.error('Error loading default values:', error);
+      toast.error('Ошибка загрузки данных профиля');
+
+      return {
+        username: '',
+        about: '',
+        gender: 'not_stated',
+        birthDate: '',
+        residenceName: '',
+        email: '',
+        currentPassword: '',
+        newPassword: '',
+        newPasswordRepeat: '',
+        hideSubscribes: false,
+        privateProfile: false,
+        hideMatureContent: false,
+        darkMode: false,
+        hideNotificationsSubscribes: false,
+        hideNotificationsComments: false,
+        hideNotificationsPaidContent: false,
+        hideNotificationsLikes: false,
+        hideNotificationsGifts: false,
+        hideNotificationsNewPosts: false,
+        showNotificationsListsReading: false,
+        showNotificationsListsRead: false,
+        showNotificationsListsPlanned: false,
+        showNotificationsListsLiked: false,
+        showNotificationsListsDropped: false,
+        emailNotificationsUpdates: false,
+        emailNotificationsSurveys: false,
+        emailNotificationsReports: false,
+      };
+    }
+  };
+
   const methods = useForm<EditProfileFormSchema>({
-    defaultValues: {},
     mode: 'onChange',
   });
-  const { reset } = methods;
+  const {
+    reset,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = methods;
 
   useEffect(() => {
     const loadDefaultValues = async () => {
-      const defaultValues = await getDefaultValues();
-      reset(defaultValues); // Обновляем значения формы
+      if (session?.user?.id) {
+        try {
+          setIsLoading(true);
+          const defaultValues = await getDefaultValues();
+          reset(defaultValues);
+        } catch (error) {
+          toast.error('Ошибка загрузки данных профиля');
+        } finally {
+          setIsLoading(false);
+        }
+      }
     };
 
     loadDefaultValues();
-  }, [reset]);
+  }, [session, reset]);
 
-  const handler: SubmitHandler<EditProfileFormSchema> = async (data) => {
+  const onSubmit: SubmitHandler<EditProfileFormSchema> = async (data) => {
     try {
-      /* Как и в каком формате сохранять данные на бэк я не знаю */
+      const updateData: any = {
+        name: data.username,
+        about: data.about,
+        gender: data.gender.toUpperCase(),
+        residenceName: data.residenceName,
+        email: data.email,
+        showMatureContent: !data.hideMatureContent,
+        closedProfile: data.privateProfile,
+        closedSubscribers: data.hideSubscribes,
+        showNotificationsSubscribes: !data.hideNotificationsSubscribes,
+        showNotificationsComments: !data.hideNotificationsComments,
+        showNotificationsPaidContent: !data.hideNotificationsPaidContent,
+        showNotificationsLikes: !data.hideNotificationsLikes,
+        showNotificationsGifts: !data.hideNotificationsGifts,
+        showNotificationsNewPosts: !data.hideNotificationsNewPosts,
+        showNotificationsListsReading: data.showNotificationsListsReading,
+        showNotificationsListsRead: data.showNotificationsListsRead,
+        showNotificationsListsPlanned: data.showNotificationsListsPlanned,
+        showNotificationsListsLiked: data.showNotificationsListsLiked,
+        showNotificationsListsDropped: data.showNotificationsListsDropped,
+        emailNotificationsUpdates: data.emailNotificationsUpdates,
+        emailNotificationsSurveys: data.emailNotificationsSurveys,
+        emailNotificationsReports: data.emailNotificationsReports,
+      };
 
-      /* Сохранения данных в localStorage */
-      localStorage.setItem('hideSubscribes', JSON.stringify(data.hideSubscribes));
-      localStorage.setItem('privateProfile', JSON.stringify(data.privateProfile));
-      localStorage.setItem('hideMatureContent', JSON.stringify(data.hideMatureContent));
-      localStorage.setItem('darkMode', JSON.stringify(data.darkMode));
-      localStorage.setItem('hideNotificationsSubscribes', JSON.stringify(data.hideNotificationsSubscribes));
-      localStorage.setItem('hideNotificationsComments', JSON.stringify(data.hideNotificationsComments));
-      localStorage.setItem('hideNotificationsPaidContent', JSON.stringify(data.hideNotificationsPaidContent));
-      localStorage.setItem('hideNotificationsLikes', JSON.stringify(data.hideNotificationsLikes));
-      localStorage.setItem('hideNotificationsGifts', JSON.stringify(data.hideNotificationsGifts));
-      localStorage.setItem('hideNotificationsNewPosts', JSON.stringify(data.hideNotificationsNewPosts));
-      localStorage.setItem('showNotificationsListsReading', JSON.stringify(data.showNotificationsListsReading));
-      localStorage.setItem('showNotificationsListsRead', JSON.stringify(data.showNotificationsListsRead));
-      localStorage.setItem('showNotificationsListsPlanned', JSON.stringify(data.showNotificationsListsPlanned));
-      localStorage.setItem('showNotificationsListsLiked', JSON.stringify(data.showNotificationsListsLiked));
-      localStorage.setItem('showNotificationsListsDropped', JSON.stringify(data.showNotificationsListsDropped));
-      localStorage.setItem('emailNotificationsUpdates', JSON.stringify(data.emailNotificationsUpdates));
-      localStorage.setItem('emailNotificationsSurveys', JSON.stringify(data.emailNotificationsSurveys));
-      localStorage.setItem('emailNotificationsReports', JSON.stringify(data.emailNotificationsReports));
-    } catch (error) {
-      toast.error(`${error.message}`);
-    } finally {
+      if (data.birthDate) {
+        const [day, month, year] = data.birthDate.split('.');
+        if (day && month && year) {
+          updateData.birthDate = new Date(`${year}-${month}-${day}`).toISOString();
+        }
+      }
+
+      if (data.newPassword) {
+        updateData.password = data.newPassword;
+        updateData.currentPassword = data.currentPassword;
+      }
+
+      // Отправка на бэкенд
+      await updateUserProfile(session.user.id, updateData);
+
+      // Обновление сессии
+      await updateSession({
+        ...session,
+        user: {
+          ...session.user,
+          name: data.username,
+          email: data.email,
+        },
+      });
+
+      // Сохранение в localStorage
+      const localStorageKeys: (keyof LocalStorageData)[] = [
+        'hideSubscribes',
+        'privateProfile',
+        'hideMatureContent',
+        'darkMode',
+        'hideNotificationsSubscribes',
+        'hideNotificationsComments',
+        'hideNotificationsPaidContent',
+        'hideNotificationsLikes',
+        'hideNotificationsGifts',
+        'hideNotificationsNewPosts',
+        'showNotificationsListsReading',
+        'showNotificationsListsRead',
+        'showNotificationsListsPlanned',
+        'showNotificationsListsLiked',
+        'showNotificationsListsDropped',
+        'emailNotificationsUpdates',
+        'emailNotificationsSurveys',
+        'emailNotificationsReports',
+      ];
+
+      localStorageKeys.forEach((key) => {
+        localStorage.setItem(key, JSON.stringify(data[key]));
+      });
+
+      await updateUserProfile(session.user.id, updateData);
+
+      await updateSession({
+        ...session,
+        user: {
+          ...session.user,
+          name: data.username,
+          email: data.email,
+        },
+      });
+
       toast.success('Данные успешно сохранены');
+
+      setTimeout(() => {
+        window.location.href = '/profile';
+      }, 500);
+    } catch (error: any) {
+      toast.error(error.message || 'Ошибка сохранения данных');
     }
   };
+
+  if (isLoading) {
+    return <div className={styles.loading}>Загрузка...</div>;
+  }
 
   return (
     <section className={cn(styles['tabs'], styles['container'], 'container')}>
       <FormProvider {...methods}>
-        <form className={styles['profile-settings-form']} onSubmit={methods.handleSubmit(handler)}>
+        <form className={styles['profile-settings-form']} onSubmit={handleSubmit(onSubmit)}>
           <Tabs mixClass={[styles['tabs__items']]} tabs={['Профиль', 'Безопасность', 'Настройки сайта']}>
             <ProfileSettings />
             <SecuritySettings />

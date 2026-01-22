@@ -1,5 +1,5 @@
 'use client';
-import { sort, tabs } from '@/data/data.json';
+import data from '@/data/data.json';
 import cn from 'classnames';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -8,6 +8,7 @@ import Post from '../Post';
 import { Cards, Tabs } from '../UI';
 import { Filters, Stats } from '../shared';
 import styles from './index.module.scss';
+const { sort, tabs } = data;
 
 const ProfileAuthor: FC = () => {
   const gifts = [
@@ -233,15 +234,15 @@ const ProfileAuthor: FC = () => {
               <Cards
                 mixClass={[]}
                 cards={[
-                  { name: 'Избранное' },
-                  { name: 'Избранное' },
-                  { name: 'Избранное' },
-                  { name: 'Избранное' },
-                  { name: 'Избранное' },
-                  { name: 'Избранное' },
-                  { name: 'Избранное' },
-                  { name: 'Избранное' },
-                  { name: 'Избранное' },
+                  { id: '1', name: 'Избранное' },
+                  { id: '1', name: 'Избранное' },
+                  { id: '1', name: 'Избранное' },
+                  { id: '1', name: 'Избранное' },
+                  { id: '1', name: 'Избранное' },
+                  { id: '1', name: 'Избранное' },
+                  { id: '1', name: 'Избранное' },
+                  { id: '1', name: 'Избранное' },
+                  { id: '1', name: 'Избранное' },
                 ]}
               />
             </>
@@ -266,15 +267,15 @@ const ProfileAuthor: FC = () => {
               <Cards
                 mixClass={[]}
                 cards={[
-                  { name: 'Закладки' },
-                  { name: 'Закладки' },
-                  { name: 'Закладки' },
-                  { name: 'Закладки' },
-                  { name: 'Закладки' },
-                  { name: 'Закладки' },
-                  { name: 'Закладки' },
-                  { name: 'Закладки' },
-                  { name: 'Закладки' },
+                  { id: '1', name: 'Закладки' },
+                  { id: '1', name: 'Закладки' },
+                  { id: '1', name: 'Закладки' },
+                  { id: '1', name: 'Закладки' },
+                  { id: '1', name: 'Закладки' },
+                  { id: '1', name: 'Закладки' },
+                  { id: '1', name: 'Закладки' },
+                  { id: '1', name: 'Закладки' },
+                  { id: '1', name: 'Закладки' },
                 ]}
               />
             </>
@@ -300,15 +301,15 @@ const ProfileAuthor: FC = () => {
               <Cards
                 mixClass={[]}
                 cards={[
-                  { name: 'Название', type: 'moder' },
-                  { name: 'Название', type: 'edit' },
-                  { name: 'Название', type: 'new' },
-                  { name: 'Название' },
-                  { name: 'Название' },
-                  { name: 'Название' },
-                  { name: 'Название' },
-                  { name: 'Название' },
-                  { name: 'Название' },
+                  { id: '1', name: 'Название', type: 'moder' },
+                  { id: '1', name: 'Название', type: 'edit' },
+                  { id: '1', name: 'Название', type: 'new' },
+                  { id: '1', name: 'Название' },
+                  { id: '1', name: 'Название' },
+                  { id: '1', name: 'Название' },
+                  { id: '1', name: 'Название' },
+                  { id: '1', name: 'Название' },
+                  { id: '1', name: 'Название' },
                 ]}
               />
             </>

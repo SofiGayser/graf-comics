@@ -139,7 +139,8 @@
     margin-bottom: 0.4em;
     font-weight: 500;
     line-height: 17px;
-
+    margin-left: auto;
+    margin-right: auto;
     @include mediaMin($size: $device-XM) {
       line-height: 29px;
 
@@ -164,7 +165,10 @@
       border: 1px solid rgba($color: $main-color, $alpha: 0.3);
     }
   }
-
+  &__timer-container {
+    justify-items: center;
+    text-align: center;
+  }
   &__timer-text {
     @include themeText;
     font-size: 0.79rem;
@@ -172,6 +176,16 @@
     line-height: 13px;
     text-align: center;
     padding-bottom: 1em;
+    &--button {
+      @include themeText;
+      text-decoration: underline;
+      border: none;
+      background-color: transparent;
+      margin-bottom: 10px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    margin-bottom: 10px;
   }
 
   &__reset-email {

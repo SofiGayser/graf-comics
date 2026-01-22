@@ -9,6 +9,8 @@
     width: 5.65em;
     border-radius: 10px;
     padding: 11px;
+    background-color: #e8e8e8;
+    margin-bottom: 10px;
   }
 
   &--active {
@@ -24,7 +26,7 @@
   }
 
   &__text {
-    font-size: 0.72rem;
+    font-size: 12px;
     font-weight: 500;
     text-align: center;
     @include themeText;

@@ -15,17 +15,27 @@ const NewComicsPreview: FC = () => {
   const sendModerate = useCallback(async () => {
     setActiveLoader(true);
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_AXIOS_URL}/api/comics`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_AXIOS_URL}/api/comics`, {
         method: 'POST',
-        body: JSON.stringify({ ...comics }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(comics),
       });
-      return router.replace('/add-comics/final');
+
+      if (!response.ok) {
+        throw new Error('Ошибка при создании комикса');
+      }
+
+      toast.success('Комикс успешно отправлен на модерацию!');
+      router.replace('/add-comics/final');
     } catch (error) {
-      toast.error(error);
+      console.error('Error:', error);
+      toast.error(error instanceof Error ? error.message : 'Произошла ошибка');
     } finally {
       setActiveLoader(false);
     }
-  }, []);
+  }, [comics, router, setActiveLoader]);
   return (
     <>
       <p className={styles['preview-text']}>Предпросмотр</p>

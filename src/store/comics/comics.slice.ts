@@ -4,13 +4,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { IComics, IFilter, Status } from './types';
 
 const initialState: IComics = {
-  title: 'Название',
-  description: 'Описание',
+  title: '',
+  description: '',
   banner: '',
   author: 'Автор',
   covers: [],
   focus: [],
   genres: [],
+  roles: [],
   rating: [
     {
       colorClass: 'author',
@@ -56,7 +57,6 @@ const comicsSlice = createSlice({
       const { payload } = action;
       state['banner'] = payload;
     },
-    // switch active element
     toggleFilters(state, action: PayloadAction<IFilter>) {
       const {
         payload: { type, element },

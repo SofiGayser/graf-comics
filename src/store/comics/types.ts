@@ -19,14 +19,13 @@ export interface IComics {
   toms: ITom[];
   author: string;
   status: Status;
-
-  //  приходят только с бэка
+  roles: FilterItem[];
   id?: string;
   likes?: string[];
 }
 
 export interface IFilter {
-  type: keyof Pick<IComics, 'focus' | 'genres' | 'rating' | 'tags'>;
+  type: keyof Pick<IComics, 'focus' | 'genres' | 'rating' | 'tags' | 'roles'>;
   element: FilterItem;
 }
 

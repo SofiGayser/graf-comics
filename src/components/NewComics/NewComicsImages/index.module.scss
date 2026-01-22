@@ -15,7 +15,7 @@
     line-height: 15px;
     border: none;
     border-radius: 562px;
-    padding: 0.5em 2em;
+    padding: 0.5em 1em;
     color: black;
     background-color: #f2effe;
     text-align: left;
@@ -73,7 +73,7 @@
 .banner {
   @include flex;
   @include clickableElement;
-  background-color: white;
+  @include themeSectionBackground;
   border: 1px solid $main-color;
   min-height: 109px;
   width: 100%;
@@ -284,4 +284,40 @@
     font-weight: bold;
     cursor: pointer;
   }
+}
+
+.view {
+  margin-top: 40px;
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  &__add-btn {
+    background-color: #7a5af8;
+    font-size: 0.79rem;
+    font-weight: 500;
+    padding: 0.7em 2.1em;
+    color: white;
+    border-radius: 250px;
+    text-decoration: none;
+    text-align: center;
+  }
+}
+
+.done {
+  background-color: #7a5af8;
+  font-size: 0.79rem;
+  font-weight: 500;
+  padding: 0.7em 4.1em;
+  color: white;
+  border-radius: 250px;
+  text-decoration: none;
+  margin-left: auto;
+  margin-right: auto;
+  justify-content: center;
+}
+.viewDone {
+  display: flex;
+  justify-content: center;
 }

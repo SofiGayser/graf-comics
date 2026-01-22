@@ -1,19 +1,45 @@
 'use client';
-import FooterLogo from '@/assets/logo-footer.svg';
+import { useTheme } from '@/context/themeProvider';
 import cn from 'classnames';
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
 import styles from './index.module.scss';
 
 const Footer: FC = () => {
+  const linkCreateArticle = '/#';
   const path = usePathname();
   if (path.includes('comics')) {
     return;
   }
+  const { theme, setTheme } = useTheme();
+  const [logo, setLogo] = useState<string>();
+  const [logoSrc, setLogoSrc] = useState<string>();
+  useEffect(() => {
+    if (theme === 'light') {
+      setLogo('logo-light-fix.png');
+      setLogoSrc('fond.png');
+    } else {
+      setLogo('logo-black-fix.png');
+      setLogoSrc('fond_dark.png');
+    }
+  }, [theme]);
+
   return (
     <footer className={styles['footer']}>
+      <header className={styles['blog__header']}>
+        <p className={styles['blog__header-text']}>
+          Данный проект спонсирован <br className={styles['blog__header-br']} />{' '}
+          <span>Фондом Содействия Инноваций</span>
+          <br />
+          Создатели платформы выражают благодарность за поддерку и финансирование
+          <br />
+          проекта и привлечение внимания к комикс индустрии Российской Федерации
+        </p>
+        <Link className={styles['blog__header-link']} href={linkCreateArticle}>
+          Узнать подробнее
+        </Link>
+      </header>
       <div className={cn(styles['footer-container'], 'container')}>
         <div className={styles['icons']}>
           <Link href="">
@@ -101,39 +127,39 @@ const Footer: FC = () => {
           </Link>
         </div>
         <div className={styles['links']}>
-          <Link className={styles['links__item']} href="/about">
-            О нас <span className={styles['dot']}></span>
-          </Link>
-          <Link className={styles['links__item']} href="/help">
-            Помощь <span className={styles['dot']}></span>
-          </Link>
-          <Link className={styles['links__item']} href="/author-rights">
-            Авторское право <span className={styles['dot']} />
-          </Link>
-          <Link className={styles['links__item']} href="/user-agreement">
-            Пользовательское соглашение <span className={styles['dot']}></span>
-          </Link>
-          <Link className={styles['links__item']} href="/policy">
-            Политика <span className={styles['dot']} />
-          </Link>
-          <Link className={styles['links__item']} href="/contacts">
-            Контакты <span className={styles['dot']}></span>
-          </Link>
-          <Link className={styles['links__item']} href="/contract">
-            Агентский договор
-          </Link>
-        </div>
+          <div className={styles['links__group']}>
+            <Link className={styles['links__item']} href="/about">
+              О нас <span className={styles['dot']}></span>
+            </Link>
+            <Link className={styles['links__item']} href="/help">
+              Помощь <span className={styles['dot']}></span>
+            </Link>
+            <Link className={styles['links__item']} href="/author-rights">
+              Авторское право
+            </Link>
+          </div>
+          <div className={styles['links__group']}>
+            <Link className={styles['links__item']} href="/user-agreement">
+              Пользовательское соглашение <span className={styles['dot']}></span>
+            </Link>
+            <Link className={styles['links__item']} href="/policy">
+              Политика
+            </Link>
+          </div>
+          <div className={styles['links__group']}>
+            <Link className={styles['links__item']} href="/contacts">
+              Контакты <span className={styles['dot']}></span>
+            </Link>
 
-        <Link
-          style={{
-            display: 'block',
-            margin: '0 auto',
-            width: 'max-content',
-          }}
-          href={'/'}
-        >
-          <Image alt="logo-foooter" src={FooterLogo} />
-        </Link>
+            <Link className={styles['links__item']} href="/contract">
+              Агентский договор
+            </Link>
+          </div>
+        </div>
+        <div className={styles['footerlogo']}>
+          <img src={logo} alt="logo" className={styles['footer-logo']} />
+          <img src={logoSrc} alt="logoSrc" className={styles['footer-logo']} />
+        </div>
       </div>
     </footer>
   );

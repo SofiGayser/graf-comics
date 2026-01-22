@@ -1,14 +1,21 @@
 @use '../../../styles/global' as *;
 
 .cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  column-gap: 10px;
-  row-gap: 17px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-start; // Выравнивание по левому краю
 
   @include mediaMin($device-XXL) {
-    grid-template-columns: repeat(4, 1fr);
-    column-gap: 44px;
-    row-gap: 89.27px;
+    gap: 44px;
+  }
+}
+
+.card {
+  width: 300px;
+  flex-shrink: 0;
+
+  @include mediaMin($device-XXL) {
+    width: 350px;
   }
 }

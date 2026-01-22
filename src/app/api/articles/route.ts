@@ -1,5 +1,8 @@
-import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/services/prisma';
+import { NextResponse, type NextRequest } from 'next/server';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export const GET = async (request: NextRequest) => {
   try {
@@ -13,7 +16,7 @@ export const GET = async (request: NextRequest) => {
       { message: error },
       {
         status: 500,
-      }
+      },
     );
   }
 };

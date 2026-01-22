@@ -2,52 +2,60 @@
 import { useLikeComicsMutation } from '@/store/api';
 import cn from 'classnames';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 import React, { FC, useState } from 'react';
 import { toast } from 'sonner';
 import { useDebouncedCallback } from 'use-debounce';
 import styles from './index.module.scss';
 import { CardProps } from './types';
 
-const Card: FC<CardProps> = ({
+interface ExtendedCardProps extends CardProps {
+  cover?: string;
+  imageSrc?: string;
+  comicsId?: string;
+}
+
+const Card: FC<ExtendedCardProps> = ({
   text,
   mixClass = [],
   type = null,
   onClick,
   imageSrc,
+  cover,
   isLiked = false,
-  comicsId = '1',
+  comicsId,
 }) => {
   const [like, setLike] = useState(isLiked);
-
   const [mutate, { isError }] = useLikeComicsMutation();
-
   const { data } = useSession();
+
+  const imageSource = cover || imageSrc;
 
   const onClickLike = useDebouncedCallback(async () => {
     const userId = data?.user?.id;
-
-    if (userId) {
-      await mutate({ comicsId: comicsId, userId: data?.user?.id });
-    }
-
-    if (isError) {
-      toast.error('Произошла ошибка!');
-      setLike((prev) => !prev);
+    if (userId && comicsId) {
+      try {
+        await mutate({ comicsId: comicsId, userId: userId });
+        setLike((prev) => !prev);
+      } catch (error) {
+        toast.error('Произошла ошибка!');
+        setLike((prev) => !prev);
+      }
+    } else {
+      toast.error('Войдите, чтобы ставить лайки');
     }
   }, 500);
 
-  return (
+  // Основное содержимое карточки
+  const cardContent = (
     <div
       className={cn(styles['card'], {
         [styles['card--moder']]: type === 'moder',
         [styles['card--edit']]: type === 'edit',
       })}
     >
-      <div
-        onClick={() => onClick?.()}
-        className={cn(styles['card__content'], { [styles['clickable']]: onClick }, ...mixClass)}
-      >
-        {imageSrc && <img className={styles['card__img']} src={imageSrc} />}
+      <div className={cn(styles['card__content'], ...mixClass)}>
+        {imageSource && <img className={styles['card__img']} src={imageSource} alt={text} />}
 
         {(() => {
           switch (type) {
@@ -73,7 +81,7 @@ const Card: FC<CardProps> = ({
                 </div>
               );
             default:
-              null;
+              return null;
           }
         })()}
         {type == 'new' || type == null ? (
@@ -102,6 +110,27 @@ const Card: FC<CardProps> = ({
       <p className={styles['card__text']}>{text}</p>
     </div>
   );
+
+  // Если передан comicsId, оборачиваем в ссылку на превью комикса
+  if (comicsId) {
+    return (
+      <Link href={`/preview/${comicsId}`} className={styles['card-link']}>
+        {cardContent}
+      </Link>
+    );
+  }
+
+  // Если есть onClick, оборачиваем в div с обработчиком
+  if (onClick) {
+    return (
+      <div onClick={onClick} className={styles['card-wrapper']}>
+        {cardContent}
+      </div>
+    );
+  }
+
+  // Иначе возвращаем обычную карточку
+  return cardContent;
 };
 
 export default React.memo(Card);

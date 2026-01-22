@@ -1,5 +1,5 @@
 'use client';
-import { FC, useContext, useState } from 'react';
+import { FC, useContext, useEffect, useState } from 'react';
 import { ctx } from '../../../context/contextProvider';
 
 import { Avatar, BurgerMenu, Logo, ModalAuth, Switch } from '@UI/index';
@@ -24,21 +24,45 @@ const Header: FC = () => {
   const { setActiveBurger, activeBurger, setActiveAvatar, activeAvatar, visibleMenu } = useContext(ctx);
 
   const { openModal } = useModal();
-
+  const [search, setSearch] = useState('');
   const { theme, setTheme } = useTheme();
 
   const { size } = useWindowSize();
 
   const path = usePathname();
 
-  const handleSignOut = () => {
-    signOut();
+  const handleSignOut = async () => {
+    await signOut({ redirect: false });
     router.replace('/');
   };
 
   const handleBurgerClick = () => {
-    setActiveBurger((prev) => !prev);
+    setActiveBurger(!activeBurger);
     setActiveAvatar(false);
+    setDropDownVisible(false);
+  };
+
+  const handleAvatarClick = () => {
+    if (size === 'mobile') {
+      setActiveAvatar(!activeAvatar);
+      setActiveBurger(false);
+    } else {
+      setDropDownVisible(!dropDownVisible);
+    }
+  };
+
+  const handleProfileClick = () => {
+    router.push('/profile');
+    // Закрываем все меню сразу
+    setActiveAvatar(false);
+    setActiveBurger(false);
+    setDropDownVisible(false);
+  };
+
+  const handleLinkClick = () => {
+    setActiveBurger(false);
+    setActiveAvatar(false);
+    setDropDownVisible(false);
   };
 
   const handleOpenModal = () => {
@@ -48,23 +72,42 @@ const Header: FC = () => {
   const withoutMobile = (callBack: () => void) => {
     if (size !== 'mobile') {
       callBack();
-    } else {
-      setActiveAvatar(true);
-      setActiveBurger(false);
     }
   };
+
+  useEffect(() => {
+    if (theme == 'light') {
+      setSearch('/search.svg');
+    } else {
+      setSearch('/searchWhite.svg');
+    }
+  }, [theme]);
+
+  // Закрываем дропдаун при клике вне области
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest(`.${styles['right-menu-btn']}`) && !target.closest(`.${styles['dropDownWrapper']}`)) {
+        setDropDownVisible(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   return (
     visibleMenu && (
       <header className={styles['header']}>
         <div className={styles['header-container']}>
+          {/* Основное меню (бургер) */}
           <nav
             className={cn(styles['nav'], {
               [styles['nav--active']]: activeBurger,
             })}
           >
             <Logo isHeader={true} mixClass={[styles['logo-header']]} />
-            <button className={styles['close-sidebar']} onClick={() => setActiveBurger(false)}>
+            <button className={styles['close-sidebar']} onClick={handleBurgerClick}>
               <svg
                 className={styles['arrow']}
                 width="7"
@@ -87,6 +130,7 @@ const Header: FC = () => {
               </svg>
               Закрыть
             </button>
+
             {Object.entries(routes).map(([text, url], i) => (
               <>
                 <Link
@@ -95,7 +139,7 @@ const Header: FC = () => {
                   }`}
                   key={i}
                   href={url}
-                  onClick={() => setActiveBurger(false)}
+                  onClick={handleLinkClick}
                 >
                   {text}
                 </Link>
@@ -125,25 +169,21 @@ const Header: FC = () => {
                 </svg>
               }
               unchecked={
-                <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="18" viewBox="0 -960 960 960" width="18">
                   <path d="M480-120q-150 0-255-105T120-480q0-150 105-255t255-105q14 0 27.5 1t26.5 3q-41 29-65.5 75.5T444-660q0 90 63 153t153 63q55 0 101-24.5t75-65.5q2 13 3 26.5t1 27.5q0 150-105 255T480-120Zm0-80q88 0 158-48.5T740-375q-20 5-40 8t-40 3q-123 0-209.5-86.5T364-660q0-20 3-40t8-40q-78 32-126.5 102T200-480q0 116 82 198t198 82Zm-10-270Z" />
                 </svg>
               }
             />
           </nav>
+
+          {/* Мобильное меню профиля */}
           <nav
             className={cn(styles['right-nav'], {
               [styles['right-nav--active']]: activeAvatar && status === 'authenticated',
             })}
           >
             <figure className={styles['avatar']}>
-              <figcaption
-                onClick={() => {
-                  setActiveAvatar(false);
-                  router.push('/profile');
-                }}
-                className={styles['avatar__name']}
-              >
+              <figcaption onClick={handleProfileClick} className={styles['avatar__name']}>
                 {data?.user.name}
               </figcaption>
               <Avatar />
@@ -157,7 +197,7 @@ const Header: FC = () => {
                   }`}
                   key={i + 1}
                   href={url}
-                  onClick={() => setActiveAvatar(false)}
+                  onClick={handleLinkClick}
                 >
                   {text}
                 </Link>
@@ -165,12 +205,19 @@ const Header: FC = () => {
               </>
             ))}
 
-            <button className={styles['auth-btn']} onClick={() => handleSignOut()}>
+            <button className={styles['auth-btn']} onClick={handleSignOut}>
               Выйти
             </button>
           </nav>
 
-          <BurgerMenu isActive={activeBurger} onClick={handleBurgerClick} />
+          {/* Мобильная верхняя панель */}
+          <div className={styles['search__mobile--view']}>
+            <BurgerMenu isActive={activeBurger} onClick={handleBurgerClick} />
+            <div className={styles['search__mobile']} onClick={() => {}}>
+              <img src={search} alt="" className={styles['search__mobile']} />
+            </div>
+          </div>
+
           <Link href={'/'}>
             <picture className={styles['logo-mobile']}>
               <source type="image/webp" srcSet="/logo-mobile.webp 1x, /logo-mobile2x.webp 2x, /logo-mobile3x.webp 3x" />
@@ -184,27 +231,29 @@ const Header: FC = () => {
               />
             </picture>
           </Link>
+
+          {/* Десктопная правая панель */}
           <div className={styles['btn-container']}>
+            <div className={styles['search']} onClick={() => {}}>
+              <img src={search} alt="" className={styles['search']} />
+            </div>
             {status === 'authenticated' || status === 'loading' ? (
               <button
                 onPointerOver={() => withoutMobile(() => setDropDownVisible(true))}
                 onPointerLeave={() => withoutMobile(() => setDropDownVisible(false))}
                 className={styles['right-menu-btn']}
+                onClick={handleAvatarClick}
               >
                 <Avatar />
                 {dropDownVisible && status === 'authenticated' && (
-                  <div className={styles['dropDownWrapper']}>
+                  <div
+                    className={styles['dropDownWrapper']}
+                    onMouseEnter={() => setDropDownVisible(true)}
+                    onMouseLeave={() => setDropDownVisible(false)}
+                  >
                     <nav className={cn(styles['dropDown'])}>
-                      <figure className={styles['avatar']}>
-                        <figcaption
-                          onClick={() => {
-                            setActiveAvatar(false);
-                            router.push('/profile');
-                          }}
-                          className={styles['avatar__name']}
-                        >
-                          {data?.user.name}
-                        </figcaption>
+                      <figure onClick={handleProfileClick} className={styles['avatar']}>
+                        <figcaption className={styles['avatar__name']}>{data?.user.name}</figcaption>
                         <Avatar />
                       </figure>
                       <span className={styles['line']}></span>
@@ -216,7 +265,7 @@ const Header: FC = () => {
                             }`}
                             key={i + 1}
                             href={url}
-                            onClick={() => setActiveAvatar(false)}
+                            onClick={handleLinkClick}
                           >
                             {text}
                           </Link>
@@ -224,7 +273,7 @@ const Header: FC = () => {
                         </>
                       ))}
 
-                      <button className={styles['auth-btn']} onClick={() => handleSignOut()}>
+                      <button className={styles['auth-btn']} onClick={handleSignOut}>
                         Выйти
                       </button>
                     </nav>
@@ -263,7 +312,7 @@ const Header: FC = () => {
                 </svg>
               }
               unchecked={
-                <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="18" viewBox="0 -960 960 960" width="18">
                   <path d="M480-120q-150 0-255-105T120-480q0-150 105-255t255-105q14 0 27.5 1t26.5 3q-41 29-65.5 75.5T444-660q0 90 63 153t153 63q55 0 101-24.5t75-65.5q2 13 3 26.5t1 27.5q0 150-105 255T480-120Zm0-80q88 0 158-48.5T740-375q-20 5-40 8t-40 3q-123 0-209.5-86.5T364-660q0-20 3-40t8-40q-78 32-126.5 102T200-480q0 116 82 198t198 82Zm-10-270Z" />
                 </svg>
               }

@@ -7,7 +7,7 @@
   background: inherit;
   border-radius: 20px;
   font-weight: 600;
-
+  @include themeText;
   @include mediaMin($device-M) {
     margin-bottom: 3.5em;
   }
@@ -74,59 +74,79 @@
   }
 }
 .cards {
+  @include themeText;
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  line-height: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); // Увеличил минимальную ширину
+  grid-auto-rows: 1fr; // Одинаковая высота строк
   margin-bottom: 20px;
+
   &__subscribe {
-    background-color: white;
+    @include themeSectionBackground;
     padding: 15px 12px;
     border-radius: 10px;
+    display: flex;
+    flex-direction: column;
     height: 100%;
+    min-height: 230px;
+    max-width: 200px;
+    width: 100%;
+  }
+
+  &__content {
+    flex: 1; // Растягивается на всё доступное пространство
     display: flex;
     flex-direction: column;
   }
-  &__content {
-    flex: 1;
-    margin-bottom: 20px;
-  }
+
   &__price {
     font-weight: 600;
-    font-size: 20px;
+    font-size: clamp(18px, 2vw, 20px); // Адаптивный размер
     text-align: center;
     color: $main-color;
     margin-right: 0.5rem;
   }
+
   &__title {
     font-weight: 600;
-    font-size: 12px;
+    font-size: clamp(10px, 1.5vw, 12px); // Адаптивный размер
     margin-bottom: 8px;
   }
+
   &__text {
     color: #818181;
     font-weight: 500;
-    font-size: 8px;
+    font-size: clamp(7px, 1.2vw, 8px); // Адаптивный размер
+    flex: 1; // Равномерное распределение пространства
   }
+
   &__button {
     background-color: $main-color;
     color: white;
     font-weight: 600;
-    font-size: 11px;
+    font-size: clamp(9px, 1.3vw, 11px); // Адаптивный размер
     border-radius: 250px;
     border: none;
     padding: 6px 20px;
     cursor: pointer;
-    margin-top: auto;
+    margin-top: auto; // Прижимаем кнопку к низу
     align-self: center;
     width: max-content;
+    min-height: 32px; // Минимальная высота кнопки
+    white-space: nowrap; // Запрет переноса текста
   }
 }
 .subscription-link {
+  @include themeText;
+  text-align: center;
   font-weight: 500;
   font-size: 10px;
   &__rule {
     text-decoration: none;
     color: $main-color;
   }
+}
+
+.active-subscription {
+  text-align: center;
 }

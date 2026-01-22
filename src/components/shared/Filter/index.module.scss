@@ -65,7 +65,7 @@
     font-weight: 600;
     line-height: normal;
     border-radius: 10px;
-    background: white;
+    background-color: transparent;
     transition: all 0.3s;
     @include colorFilters;
   }

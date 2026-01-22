@@ -7,9 +7,10 @@
 .card {
   border: transparent 1px solid;
   border-radius: 10px;
-
+  text-align: center;
   &__content {
     position: relative;
+    margin-right: auto;
     border-radius: 10px;
     width: clamp(6.429em, 5.114em + 5.75vw, 13em);
     height: clamp(8.214em, 6.729em + 6.2vw, 15.643em);
@@ -130,5 +131,15 @@
     color: white;
     font-size: clamp(0.4rem, 0.5rem + 0.25vw, 0.7rem);
     font-weight: 600;
+  }
+}
+.card-link {
+  text-decoration: none;
+  display: block;
+  color: inherit;
+
+  &:hover {
+    text-decoration: none;
+    color: inherit;
   }
 }

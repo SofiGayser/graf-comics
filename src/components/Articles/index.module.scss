@@ -4,22 +4,18 @@
   overflow-x: scroll;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
-
+  justify-content: space-between;
   &::-webkit-scrollbar {
     width: 0;
     height: 0;
   }
 
-  @include flex($gap: 1em, $justify: flex-start);
+  @include flex($gap: 1em);
 
   @include mediaMin($size: $device-M) {
     gap: 2.42em;
     flex-wrap: wrap;
     align-items: flex-start;
-  }
-
-  @include mediaMin($size: $device-XXL) {
-    justify-content: center;
   }
 }
 

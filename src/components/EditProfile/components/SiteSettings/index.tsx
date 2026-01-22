@@ -1,5 +1,6 @@
+import { useTheme } from '@/context/themeProvider';
 import cn from 'classnames';
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import styles from '../../index.module.scss';
 import { SiteSettingsFormSchema } from './types';
@@ -22,6 +23,19 @@ const SiteSettings: FC = () => {
     register,
     formState: { errors },
   } = useFormContext<SiteSettingsFormSchema>();
+
+  const { theme, setTheme } = useTheme();
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('theme') as 'light' | 'dark';
+    if (storedTheme) {
+      setTheme(storedTheme);
+    }
+  }, []);
+  const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedTheme = e.target.value as 'light' | 'dark';
+    setTheme(selectedTheme);
+  };
+
   return (
     <div className={cn('container', styles['settings-container'])}>
       <fieldset className={styles['fieldset-container--without-pt']}>
@@ -32,25 +46,38 @@ const SiteSettings: FC = () => {
         >
           <input
             {...register('hideMatureContent')}
-            className={styles['radio-btn__switch']}
+            className={styles['radio-btn__input']}
             type="checkbox"
             id="hideMatureContent"
             value={'true'}
           />
-          <span className={styles['radio-btn__switch-move']}></span>
+          <span className={styles['radio-btn__circle']}></span>
           Скрыть +18 тайтлы
         </label>
         <p className={styles['profile-settings-form__text-label']}> Ночная тема</p>
         <label htmlFor="dark_mode" className={cn(styles['radio-btn__label'], styles['radio-btn__hide-subscribes'])}>
-          <input
-            {...register('darkMode')}
-            className={styles['radio-btn__switch']}
-            type="checkbox"
-            id="dark_mode"
-            value="true"
-          />
-          <span className={styles['radio-btn__switch-move']}></span>
-          Включить ночную тему
+          <label className={styles['radio-btn']}>
+            <input
+              type="radio"
+              value="light"
+              checked={theme === 'light'}
+              onChange={handleThemeChange}
+              className={styles['radio-btn__input']}
+            />
+            <span className={styles['radio-btn__circle']}></span>
+            Дневная
+          </label>
+          <label className={styles['radio-btn']}>
+            <input
+              type="radio"
+              value="dark"
+              checked={theme === 'dark'}
+              onChange={handleThemeChange}
+              className={styles['radio-btn__input']}
+            />
+            <span className={styles['radio-btn__circle']}></span>
+            Ночная
+          </label>
         </label>
 
         <div className={styles['profile-settings-form__notifications']}>
@@ -267,9 +294,6 @@ const SiteSettings: FC = () => {
             Сообщения о нарушениях
           </label>
         </div>
-        <button type="submit" className={styles['save-btn']}>
-          Сохранить
-        </button>
       </fieldset>
     </div>
   );

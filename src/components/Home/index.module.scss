@@ -404,10 +404,6 @@
 .genre-container {
   &__link {
     margin: 0 0 0.9em 1.1em;
-
-    @include mediaMin($device-M) {
-      margin-bottom: 3.5em;
-    }
   }
 }
 
@@ -430,7 +426,9 @@
 
   &__card {
     display: none;
-
+    border-radius: 15px;
+    background-color: transparent;
+    height: 200px;
     @include mediaMin($device-L) {
       display: inline;
       width: max-content;

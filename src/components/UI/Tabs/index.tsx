@@ -1,6 +1,6 @@
 'use client';
 import cn from 'classnames';
-import React, { FC, useLayoutEffect, useState } from 'react';
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 import type { MixClass } from '../../../types/mixClass.type';
 import styles from './index.module.scss';
 
@@ -9,46 +9,63 @@ type Props = {
   children: React.ReactNode;
 } & MixClass;
 
-type ScrollActive = {
-  left: number;
-  width: number;
-};
-
 const Tabs: FC<Props> = ({ tabs, children, mixClass }) => {
   const [numActive, setNumActive] = useState<number>(0);
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
+  const indicatorRef = useRef<HTMLSpanElement>(null);
+  const observerRef = useRef<ResizeObserver>();
 
-  const [scrollActive, setScrollActive] = useState<ScrollActive>({
-    left: 0,
-    width: 0,
-  });
+  // Обновление позиции индикатора
+  const updateIndicatorPosition = useCallback(() => {
+    if (!tabsContainerRef.current || numActive >= tabs.length) return;
 
-  const [tabsWidths, setTabsWidths] = useState<number[]>([]);
+    const buttons = tabsContainerRef.current.querySelectorAll(`.${styles['btns__item']}`);
+    if (buttons.length === 0) return;
 
+    const activeButton = buttons[numActive] as HTMLElement;
+    const containerRect = tabsContainerRef.current.getBoundingClientRect();
+    const buttonRect = activeButton.getBoundingClientRect();
+
+    const left = buttonRect.left - containerRect.left;
+    const width = buttonRect.width;
+
+    if (indicatorRef.current) {
+      indicatorRef.current.style.left = `${left}px`;
+      indicatorRef.current.style.width = `${width}px`;
+    }
+  }, [numActive, tabs.length]);
+
+  // Обработчик смены вкладки
   const changeActive = (index: number) => {
     setNumActive(index);
-    const { left } = document.querySelectorAll(`.${styles['btns__item']}`).item(index).getBoundingClientRect();
-
-    setScrollActive({ ...scrollActive, width: tabsWidths[index], left: left - tabsWidths[index] / 8 });
   };
 
-  useLayoutEffect(() => {
-    const widths: number[] = [];
+  // Инициализация и обновление при изменениях
+  useEffect(() => {
+    updateIndicatorPosition();
 
-    document
-      .querySelectorAll(`.${styles['btns__item']}`)
-      .forEach((v) => widths.push(v.clientWidth + v.clientWidth / 4));
+    // Наблюдатель за изменениями размеров
+    const resizeObserver = new ResizeObserver(() => {
+      updateIndicatorPosition();
+    });
 
-    setTabsWidths(widths);
+    if (tabsContainerRef.current) {
+      resizeObserver.observe(tabsContainerRef.current);
+      tabsContainerRef.current.querySelectorAll(`.${styles['btns__item']}`).forEach((btn) => {
+        resizeObserver.observe(btn);
+      });
+    }
 
-    const { left } = document.querySelectorAll(`.${styles['btns__item']}`).item(0).getBoundingClientRect();
+    observerRef.current = resizeObserver;
 
-    setScrollActive({ ...scrollActive, width: widths[0], left: left - widths[0] / 8 });
-    setNumActive(0);
-  }, []);
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [numActive, tabs, updateIndicatorPosition]);
 
   return (
     <div className={'tabs'}>
-      <div className={cn(styles['tabs__scroller'], ...mixClass)}>
+      <div ref={tabsContainerRef} className={cn(styles['tabs__scroller'], ...mixClass)}>
         <div className={cn(styles['tabs__btns'], styles['btns'])}>
           {tabs.map((value, index) => (
             <button
@@ -63,13 +80,7 @@ const Tabs: FC<Props> = ({ tabs, children, mixClass }) => {
             </button>
           ))}
         </div>
-        <span
-          style={{
-            left: `${scrollActive.left}px`,
-            width: `${scrollActive.width}px`,
-          }}
-          className={styles['tabs__active']}
-        ></span>
+        <span ref={indicatorRef} className={styles['tabs__active']}></span>
       </div>
 
       <div className={styles['tabs__content']}>{children[numActive]}</div>

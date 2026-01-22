@@ -7,6 +7,9 @@
   @include themeSectionBackground;
   @include flex($dir: column, $justify: space-between);
   height: clamp(7.143rem, 18.125vw + 3rem, 27.857rem);
+  @media (min-width: 993px) {
+    height: 300px;
+  }
   scroll-snap-align: start;
 
   @include mediaMin($size: $device-M) {
@@ -15,6 +18,7 @@
 
   &__container-text {
     align-self: flex-start;
+    height: auto;
   }
 
   &__header {
@@ -28,7 +32,7 @@
 
   &__short {
     align-self: flex-start;
-    max-width: 100px;
+    max-width: 100%;
     font-size: clamp(0.571rem, 0.5vw + 0.457rem, 1.143rem);
     font-weight: 500;
     line-height: 15px;
@@ -41,10 +45,22 @@
     @include themeText;
   }
 
+  @media (min-width: 993px) {
+    &__img {
+      width: 100%;
+      background-color: #d9d9d9;
+      height: 35%;
+      border-radius: 10px;
+      display: block;
+      margin-top: auto;
+      margin-bottom: 10px;
+    }
+  }
   &__link {
     width: clamp(7.143rem, 9.375vw + 5rem, 17.857rem);
     text-align: center;
     @include flex;
+    height: 20%;
     padding: 0.5em 0.4em;
     border: 0.89px solid #7a5af8;
     color: $primary-color;

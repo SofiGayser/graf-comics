@@ -1,16 +1,74 @@
 'use client';
-import React, { FC, useContext, useState } from 'react';
+import { ctx } from '@/context/contextProvider';
 import { useActions, useAppSelector } from '@/hooks/redux';
 import cn from 'classnames';
+import { FC, useContext, useState } from 'react';
 import styles from './index.module.scss';
-import { ctx } from '@/context/contextProvider';
 
 const BookMarkMenu: FC = () => {
-  const { activeBookMarks, setActiveBookMarks } = useContext(ctx);
+  const { activeBookMarks, setActiveBookMarks, currentComicsId } = useContext(ctx);
   const { bookmarks } = useAppSelector((state) => state.user);
   const { addBookMark } = useActions();
   const [add, setAdd] = useState(false);
   const [addValue, setAddValue] = useState('');
+
+  // Статусы для закладок
+  const bookmarkStatuses = [
+    { value: 'READING', label: 'Читаю' },
+    { value: 'PLANNED', label: 'В планах' },
+    { value: 'COMPLETED', label: 'Прочитано' },
+    { value: 'DROPPED', label: 'Брошено' },
+  ];
+
+  // Функция для добавления/обновления закладки
+  const handleAddBookmark = async (status: string) => {
+    if (!currentComicsId) return;
+
+    try {
+      const response = await fetch(`/api/comics/${currentComicsId}/bookmark`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (response.ok) {
+        console.log(`Добавлено в "${status}"`);
+        setActiveBookMarks(false);
+        // Можно добавить уведомление об успехе
+      } else {
+        console.error('Ошибка при добавлении в закладки');
+      }
+    } catch (error) {
+      console.error('Ошибка при добавлении в закладки:', error);
+    }
+  };
+
+  // Функция для удаления закладки
+  const handleRemoveBookmark = async () => {
+    if (!currentComicsId) return;
+
+    try {
+      const response = await fetch(`/api/comics/${currentComicsId}/bookmark`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        console.log('Удалено из избранного');
+        setActiveBookMarks(false);
+        // Можно добавить уведомление об успехе
+      } else {
+        console.error('Ошибка при удалении из закладок');
+      }
+    } catch (error) {
+      console.error('Ошибка при удалении из закладок:', error);
+    }
+  };
+
+  // Если comicsId не установлен, не показываем меню
+  if (!currentComicsId) return null;
+
   return (
     <>
       {activeBookMarks && (
@@ -43,9 +101,17 @@ const BookMarkMenu: FC = () => {
             </div>
 
             <div className={styles['bookmarks']}>
-              {bookmarks.map((el) => (
-                <button className={styles['bookmarks__item']}>{el}</button>
+              {/* Статусы закладок */}
+              {bookmarkStatuses.map((status) => (
+                <button
+                  key={status.value}
+                  className={styles['bookmarks__item']}
+                  onClick={() => handleAddBookmark(status.value)}
+                >
+                  {status.label}
+                </button>
               ))}
+
               {add ? (
                 <div onClick={(e) => e.stopPropagation()} className={styles['bookmarks__container']}>
                   <input
@@ -84,7 +150,10 @@ const BookMarkMenu: FC = () => {
                 </button>
               )}
 
-              <button className={cn(styles['bookmarks__item'], styles['bookmarks__item--remove'])}>
+              <button
+                className={cn(styles['bookmarks__item'], styles['bookmarks__item--remove'])}
+                onClick={handleRemoveBookmark}
+              >
                 Удалить из избранного
               </button>
             </div>
@@ -94,4 +163,5 @@ const BookMarkMenu: FC = () => {
     </>
   );
 };
+
 export default BookMarkMenu;

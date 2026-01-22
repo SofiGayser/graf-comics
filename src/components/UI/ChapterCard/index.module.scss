@@ -1,41 +1,38 @@
 @use '../../../styles/global' as *;
 
 .chapter {
-    width: 100%;
-    padding: .5em;
-    @include flex($justify: flex-start);
-    border-radius: 10px;
-    background: #FAFAFA;
+  width: 100%;
+  padding: 0.5em;
+  @include flex($justify: flex-start);
+  border-radius: 10px;
+  background: #fafafa;
+  justify-content: space-between;
 
-    &--ridden {
-        background: #DFDFDF;
-    }
+  font-size: 1rem;
+  font-weight: 500;
+  &--ridden {
+    background: #dfdfdf;
+  }
 
-    &__views-icon {
-        margin-right: .7em;
-    }
+  &__views-icon {
+    margin-right: 0.7em;
+  }
 
-    &__like-icon {
-        margin-right: .2em;
-    }
+  &__like-icon {
+    margin-right: 0.2em;
+  }
 
-    &__text-container {
-        margin-right: 10em;
-    }
+  &__text-container {
+    margin-right: 10em;
+  }
 
-    &__time-code {
-        color: #2D283E;
-        font-size: .72rem;
-        font-weight: 500;
-        line-height: normal;
-    }
+  &__time-code {
+    color: #2d283e;
+    line-height: normal;
+  }
 
-    &__text-chapter {
-        color: #2D283E;
-        font-size: .86rem;
-        font-weight: 500;
-        line-height: normal;
-
-    }
-
+  &__text-chapter {
+    color: #2d283e;
+    line-height: normal;
+  }
 }

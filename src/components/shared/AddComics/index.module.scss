@@ -1,6 +1,7 @@
 @use '../../../styles/global' as *;
 
 .add-comics {
+  @include themeText;
   &__link {
     margin-bottom: 0.65em;
   }

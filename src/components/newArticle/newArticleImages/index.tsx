@@ -1,7 +1,7 @@
 'use client';
 import { SearchSelect } from '@/components/UI';
 import { AddArticle } from '@/components/shared';
-import { category } from '@/data/data.json';
+import data from '@/data/data.json';
 import { useActions, useAppSelector } from '@/hooks/redux';
 import { useGetUserByIdQuery } from '@/store/api';
 import { IArticle } from '@/store/article/types';
@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import { ChangeEvent, FC, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import styles from './index.module.scss';
-
+const { category } = data;
 const categoriesData = category.map((v, i) => ({ colorClass: 'violet', text: v }) as FilterItem);
 
 type FormData = {

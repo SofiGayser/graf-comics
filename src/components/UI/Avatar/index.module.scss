@@ -54,3 +54,34 @@
     }
   }
 }
+
+/* Fallback avatar with initial */
+.fallback {
+  @include themeAvatar;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  border-radius: 30px;
+  @include themeBackground;
+  @include themeText;
+  font-weight: 700;
+  user-select: none;
+
+  @include mediaMin($device-L) {
+    cursor: pointer;
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+  }
+}
+
+.fallback__letter {
+  font-size: 16px;
+  line-height: 1;
+
+  @include mediaMin($device-L) {
+    font-size: 28px;
+  }
+}

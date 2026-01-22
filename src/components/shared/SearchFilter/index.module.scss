@@ -44,7 +44,7 @@
     font-weight: 600;
     line-height: normal;
     border-radius: 10px;
-    background: white;
+    background-color: transparent;
     transition: all 0.3s;
 
     @include colorFilters;
@@ -63,12 +63,12 @@
     line-height: 15px;
 
     &--tags {
-      background-color: #fdedf8;
+      @include themeInputFilter;
       color: #ee46bc;
       @include focus($outline: 1px solid rgb(97, 97, 97));
 
       &::placeholder {
-        background-color: #fdedf8;
+        @include themeInputFilter;
         color: #f8b5e4;
         font-size: 0.86rem;
         font-weight: 600;

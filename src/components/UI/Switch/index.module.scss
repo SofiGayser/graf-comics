@@ -3,7 +3,7 @@
 .switch {
   width: 50px;
   height: 23px;
-  background: white;
+  background: #7a5af8;
   list-style: none;
   position: relative;
   display: inline-block;
@@ -16,7 +16,7 @@
   @include addCursorElement($device-M);
 
   &--checked {
-    background: #7a5af8;
+    background: #2d283e;
 
     .switch-inner-checked {
       transform: translateX(0);
@@ -51,7 +51,7 @@
     inset-inline-end: 0;
     bottom: 0;
     inset-inline-start: 0;
-    background-color: #2d283e;
+    background-color: white;
     border-radius: 9px;
     box-shadow: 0px 2px 4px 0px rgba(0, 35, 11, 0.2);
     transition: all 0.4s ease-in-out;

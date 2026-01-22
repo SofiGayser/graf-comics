@@ -21,16 +21,24 @@ interface IContext {
   visibleMenu: boolean;
   setVisibleMenu: React.Dispatch<React.SetStateAction<boolean>>;
 
-  toggleFilters: ({ text, colorClass }) => void;
+  toggleFilters: (val: FilterItem) => void;
 
   activeBookMarks: boolean;
   setActiveBookMarks: React.Dispatch<React.SetStateAction<boolean>>;
+
+  currentComicsId: string | null;
+  setCurrentComicsId: React.Dispatch<React.SetStateAction<string | null>>;
+
+  theme: 'light' | 'dark';
+  setTheme: React.Dispatch<React.SetStateAction<'light' | 'dark'>>;
 }
+
 export const ctx = React.createContext<IContext>({} as IContext);
 
 type Props = {
   children: React.ReactNode;
 };
+
 const ContextProvider: FC<Props> = ({ children }) => {
   // loader сайта
   const [activeLoader, setActiveLoader] = useState<boolean>(false);
@@ -53,11 +61,19 @@ const ContextProvider: FC<Props> = ({ children }) => {
   // меню закладок
   const [activeBookMarks, setActiveBookMarks] = useState<boolean>(false);
 
+  // текущий comicsId для закладок
+  const [currentComicsId, setCurrentComicsId] = useState<string | null>(null);
+
+  // тема
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
-  const toggleFilters = (val: any) => {
+  const toggleFilters = (val: FilterItem) => {
     const ind = activeFilters.findIndex((e) => e.text === val.text);
-    ind === -1 ? setFilters((prev) => [val, ...prev]) : setFilters((prev) => prev.filter((el) => el.text !== val.text));
+    if (ind === -1) {
+      setFilters((prev) => [val, ...prev]);
+    } else {
+      setFilters((prev) => prev.filter((el) => el.text !== val.text));
+    }
   };
 
   const obj = useMemo(
@@ -77,9 +93,24 @@ const ContextProvider: FC<Props> = ({ children }) => {
       toggleFilters,
       activeBookMarks,
       setActiveBookMarks,
+      currentComicsId,
+      setCurrentComicsId,
+      theme,
+      setTheme,
     }),
-    [activeLoader, activeBurger, activeModal, activeAvatar, activeFilters, visibleMenu, activeBookMarks],
+    [
+      activeLoader,
+      activeBurger,
+      activeModal,
+      activeAvatar,
+      activeFilters,
+      visibleMenu,
+      activeBookMarks,
+      currentComicsId,
+      theme,
+    ],
   );
+
   return <ctx.Provider value={obj}>{children}</ctx.Provider>;
 };
 

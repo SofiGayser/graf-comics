@@ -17,18 +17,18 @@ const Novelty: FC = () => {
             <Cards
               mixClass={[styles['novetly__cards']]}
               cards={[
-                { name: 'Название', type: 'new' },
-                { name: 'Название', type: 'new' },
-                { name: 'Название', type: 'new' },
-                { name: 'Название', type: 'new' },
-                { name: 'Название', type: 'new' },
-                { name: 'Название', type: 'new' },
-                { name: 'Название', type: 'new' },
-                { name: 'Название', type: 'new' },
-                { name: 'Название', type: 'new' },
-                { name: 'Название', type: 'new' },
-                { name: 'Название', type: 'new' },
-                { name: 'Название', type: 'new' },
+                { id: '1', name: 'Название', type: 'new' },
+                { id: '2', name: 'Название', type: 'new' },
+                { id: '3', name: 'Название', type: 'new' },
+                { id: '4', name: 'Название', type: 'new' },
+                { id: '5', name: 'Название', type: 'new' },
+                { id: '6', name: 'Название', type: 'new' },
+                { id: '7', name: 'Название', type: 'new' },
+                { id: '8', name: 'Название', type: 'new' },
+                { id: '9', name: 'Название', type: 'new' },
+                { id: '10', name: 'Название', type: 'new' },
+                { id: '11', name: 'Название', type: 'new' },
+                { id: '12', name: 'Название', type: 'new' },
               ]}
             />
           </div>

@@ -6,18 +6,23 @@ import styles from './index.module.scss';
 
 type Props = {
   text: string;
+  description?: string;
   mixClass?: string[];
   imagePath: string;
 };
 
-const AchievementCard: FC<Props> = ({ text, mixClass = [], imagePath }) => {
+const AchievementCard: FC<Props> = ({ text, description, mixClass = [], imagePath }) => {
   const router = useRouter();
 
   const [isActive, setIsActive] = useState(false);
 
   const handleClick = () => {
     setIsActive(!isActive);
-    router.push('/achievement-detail');
+    router.push(
+      `/achievement-detail?title=${encodeURIComponent(text)}${
+        description ? `&description=${encodeURIComponent(description)}` : ''
+      }&image=${encodeURIComponent(imagePath)}`,
+    );
   };
 
   return (

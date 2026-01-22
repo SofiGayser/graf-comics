@@ -5,12 +5,24 @@
   font-size: 0.86rem;
   line-height: 15px;
   width: max-content;
-  margin: 0 auto 1.9em;
+  margin-top: 10px;
 }
 
 .btns {
   @include flex($gap: 0.71em);
-  margin: 0 auto 0.78em;
+  margin-top: 10px;
+  &__add {
+    display: flex;
+    @include mediaMin($device-PC) {
+      flex-direction: row;
+    }
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    @include themeText;
+    margin-bottom: 20px;
+  }
 
   &__add-btn {
     border: 1px solid $main-color;

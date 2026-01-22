@@ -1,0 +1,468 @@
+@use '../../../styles/global' as *;
+
+.ordersPage {
+  padding: 40px 0 80px;
+  min-height: calc(100vh - 200px);
+  background-color: #f8f9fa;
+}
+
+.pageTitle {
+  font-size: 36px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 40px;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    font-size: 28px;
+    margin-bottom: 30px;
+  }
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  font-size: 18px;
+  color: #666;
+
+  .loader {
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.notAuth {
+  background: white;
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+  max-width: 600px;
+  margin: 40px auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
+  h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 16px;
+  }
+
+  .shopButton {
+    background: #7a5af8;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: #6a4ae0;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.noOrders {
+  background: white;
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
+  .noOrdersIcon {
+    margin: 0 auto 30px;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 64px;
+      height: 64px;
+    }
+  }
+
+  h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .shopButton {
+    background: #7a5af8;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: #6a4ae0;
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+.ordersList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.orderCard {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.orderHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 30px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 1px solid #eee;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.orderInfo {
+  flex: 1;
+
+  .orderNumber {
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 8px 0;
+
+    @media (max-width: 768px) {
+      font-size: 18px;
+    }
+  }
+
+  .orderDate {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+  }
+}
+
+.orderStatus {
+  text-align: right;
+
+  @media (max-width: 768px) {
+    text-align: left;
+    width: 100%;
+  }
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.orderTotal {
+  font-size: 18px;
+  font-weight: 700;
+  color: #7a5af8;
+  margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
+}
+
+.orderItems {
+  padding: 24px 30px;
+  border-bottom: 1px solid #eee;
+
+  h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 16px 0;
+  }
+}
+
+.orderItem {
+  display: flex;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #f8f9fa;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.itemImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f8f9fa;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    height: 200px;
+  }
+}
+
+.itemInfo {
+  flex: 1;
+
+  h5 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+  }
+
+  .variant {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 8px 0;
+  }
+
+  .itemDetails {
+    font-size: 14px;
+    color: #7a5af8;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+.orderHistory {
+  padding: 24px 30px;
+  background: #f8f9fa;
+
+  h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 16px 0;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+
+.historyDate {
+  font-size: 12px;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.historyStatus {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  flex: 1;
+}
+
+.historyNote {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+  width: 100%;
+  margin-top: 4px;
+  padding-left: 20px;
+}
+
+// Анимации
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.orderCard {
+  animation: fadeIn 0.3s ease-out;
+
+  &:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  &:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  &:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  &:nth-child(4) {
+    animation-delay: 0.4s;
+  }
+  &:nth-child(5) {
+    animation-delay: 0.5s;
+  }
+}
+
+// Пустой state иконка
+.noOrdersIcon {
+  svg {
+    stroke-width: 1.5;
+  }
+}
+
+// Адаптивные стили
+@media (max-width: 768px) {
+  .ordersPage {
+    padding: 20px 0 40px;
+  }
+
+  .orderCard {
+    border-radius: 16px;
+  }
+
+  .orderHeader,
+  .orderItems,
+  .orderHistory {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .orderHeader {
+    padding: 16px;
+  }
+
+  .orderItems,
+  .orderHistory {
+    padding: 16px;
+  }
+
+  .pageTitle {
+    font-size: 24px;
+    padding: 0 16px;
+  }
+
+  .noOrders {
+    padding: 40px 20px;
+    margin: 0 16px;
+
+    h2 {
+      font-size: 20px;
+    }
+  }
+}
+
+// Статусы заказов
+.statusColors {
+  .confirmed {
+    background: #2ed573;
+  }
+  .processing {
+    background: #ffa502;
+  }
+  .shipped {
+    background: #18dcff;
+  }
+  .delivered {
+    background: #7d5fff;
+  }
+  .cancelled {
+    background: #ff4757;
+  }
+  .pending {
+    background: #666;
+  }
+}
+
+// Информационные сообщения
+.infoMessage {
+  background: rgba(122, 90, 248, 0.1);
+  border: 1px solid rgba(122, 90, 248, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 20px 0;
+  color: #7a5af8;
+  font-size: 14px;
+
+  p {
+    margin: 0;
+  }
+}

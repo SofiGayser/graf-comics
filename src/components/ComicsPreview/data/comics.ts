@@ -1,5 +1,6 @@
-import { chapters as defaultChapters } from '@/data/data.json';
+import data from '@/data/data.json';
 import { IComics, Status } from '@/store/comics/types';
+const defaultChapters = data.chapters;
 export const comicsData: IComics = {
   title: 'Название',
   description: `Описание комикса. Avery is a vampire hunter! Who unfortunately gets bitten by and subsequently turned into, a vampire.
@@ -11,6 +12,7 @@ export const comicsData: IComics = {
   genres: [],
   focus: [],
   tags: [],
+  roles: [],
   rating: [
     {
       colorClass: 'author',

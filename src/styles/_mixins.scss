@@ -32,6 +32,11 @@
   transition: background-color 0.5s ease-out;
 }
 
+@mixin themeInputFilter {
+  background: var(--input-theme);
+  transition: background-color 0.5s ease-out;
+}
+
 @mixin themeSideBarLine {
   background: var(--sidebar-line);
   transition: background-color 0.3s ease-out;
@@ -55,6 +60,11 @@
 
 @mixin themeAvatar {
   border: 1px solid var(--avatar-border-color);
+  transition: all 0.2s ease-out;
+}
+
+@mixin themeAvatarBorder {
+  border: 3px solid var(--section-background-color);
   transition: all 0.2s ease-out;
 }
 
@@ -104,6 +114,11 @@
 
 @mixin themeLogoSrc {
   background-image: var(--logo-src);
+  transition: background-image 0.3s ease-out;
+}
+
+@mixin themeBackgroundBlogSrc {
+  background-image: var(--background-blog);
   transition: background-image 0.3s ease-out;
 }
 

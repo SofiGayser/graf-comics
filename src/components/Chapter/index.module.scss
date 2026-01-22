@@ -1,9 +1,5 @@
 @use '../../styles/global' as *;
 
-.chapter {
-  max-width: 450px;
-}
-
 .chapter-info {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 18fr;

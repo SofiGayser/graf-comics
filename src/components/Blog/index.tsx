@@ -1,6 +1,6 @@
 'use client';
 import { ctx } from '@/context/contextProvider';
-import { author, sortSmall, theme } from '@/data/data.json';
+import data from '@/data/data.json';
 import cn from 'classnames';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -10,6 +10,7 @@ import Articles from '../Articles';
 import { Button, SliderArticles } from '../UI';
 import { ActiveFilters, ArrowLink } from '../shared';
 import styles from './index.module.scss';
+const { author, sortSmall, theme } = data;
 
 const Filters = dynamic(() => import('@/components/shared/Filters/index'), {
   ssr: false,
@@ -26,20 +27,7 @@ const Blog: FC = () => {
     <>
       <section className={styles['blog']}>
         <section className={styles['image-section']}>
-          <div className={styles['cards']}>
-            <div className={styles['cards__item']}>
-              <img src={'/homePage6.svg'} alt="" />
-            </div>
-            <div className={styles['cards__item']}>
-              <img className={styles['cards__item--right']} src={'/homePage3.svg'} alt="" />
-            </div>
-            <div className={styles['cards__item']}>
-              <img src={'/homePage4.svg'} alt="" />
-            </div>
-            <div className={styles['cards__item']}>
-              <img src={'/homePage5.svg'} alt="" />
-            </div>
-          </div>
+          <div className={styles['cards']}></div>
           <div className={styles['image-container']}>
             <div className={styles['image-container__text-container']}>
               <h1 className={styles['image-container__slogan']}>Есть чем поделиться с миром?</h1>
@@ -54,59 +42,8 @@ const Blog: FC = () => {
             </div>
           </div>
 
-          <div className={styles['cards-pc']}>
-            <div className={styles['cards-pc__item']}>
-              <img src={'/homePage2.svg'} alt="Card 2" />
-            </div>
-
-            <div className={styles['cards-pc__item']}>
-              <img src={'/homePage1.svg'} alt="Card 1" />
-            </div>
-
-            <div className={styles['cards-pc__item']}>
-              <img src={'/homePage3.svg'} alt="Card 3" />
-            </div>
-
-            <div className={styles['cards-pc__item']}>
-              <img src={'/homePage7.svg'} alt="Card 7" />
-            </div>
-
-            <div className={styles['cards-pc__item']}>
-              <img src={'/homePage4.svg'} alt="Card 4" />
-            </div>
-
-            <div className={styles['cards-subgrid']}>
-              <div className={styles['cards-subgrid__item']}>
-                <img src={'/homePage5.svg'} alt="Card 5" />
-              </div>
-              <div className={styles['cards-subgrid__item']}>
-                <img src={'/homePage6.svg'} alt="Card 6" />
-              </div>
-            </div>
-
-            <div className={styles['cards-subgrid-bottom']}>
-              <div className={styles['cards-subgrid-bottom__item']}>
-                <img src={'/homePage8.svg'} alt="Card 8" />
-              </div>
-              <div className={styles['cards-subgrid-bottom__item']}>
-                <img src={'/homePage9.svg'} alt="Card 9" />
-              </div>
-            </div>
-          </div>
-          <div className={styles['cards']}>
-            <div className={styles['cards__item']}>
-              <img src={'/homePage9.svg'} alt="" />
-            </div>
-            <div className={styles['cards__item']}>
-              <img src={'/homePage1.svg'} alt="" />
-            </div>
-            <div className={styles['cards__item']}>
-              <img src={'/homePage7.svg'} alt="" />
-            </div>
-            <div className={styles['cards__item']}>
-              <img className={styles['cards__item--left']} src={'/homePage8.svg'} alt="" />
-            </div>
-          </div>
+          <div className={styles['cards-pc']}></div>
+          <div className={styles['cards']}></div>
         </section>
         <div className={styles['blog__search--mobile']}>
           <label htmlFor="search" className={styles['blog__search-label']}>

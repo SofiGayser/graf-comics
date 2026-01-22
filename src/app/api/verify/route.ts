@@ -1,6 +1,11 @@
 import prisma from '@/services/prisma';
 import jwt from 'jsonwebtoken';
 import { NextResponse, type NextRequest } from 'next/server';
+
+// Добавьте эти строки ↓
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export const GET = async (request: NextRequest) => {
   try {
     const token = request.nextUrl.searchParams.get('token');

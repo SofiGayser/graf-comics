@@ -7,7 +7,6 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ message: 'Id not found' }, { status: 400 });
     }
 
-    // Получаем общее количество комиксов (исключая текущий)
     const totalComicses = await prisma.comics.count({
       where: {
         NOT: { id: params.id },
@@ -15,15 +14,12 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       },
     });
 
-    // Если нет других статей, возвращаем пустой массив
     if (totalComicses === 0) {
       return NextResponse.json([]);
     }
 
-    // Ограничиваем количество случайных комиксов
     const randomLimit = 2;
 
-    // Если комиксов меньше или равно лимиту, возвращаем все
     if (totalComicses <= randomLimit) {
       const comicses = await prisma.comics.findMany({
         where: {
@@ -40,7 +36,6 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json(comicses);
     }
 
-    // Генерируем случайные пропуски для пагинации
     const randomSkip = Math.floor(Math.random() * (totalComicses - randomLimit));
 
     const randomComicses = await prisma.comics.findMany({

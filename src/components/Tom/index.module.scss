@@ -11,10 +11,6 @@
   min-height: 35px;
   border-bottom: 1px solid #4d37a5;
 
-  @include mediaMin($device-PC) {
-    max-width: 400px;
-  }
-
   &__show-btn {
     @include clickableElement;
     display: flex;
@@ -51,7 +47,7 @@
     font-weight: 600;
     font-size: 0.86rem;
     line-height: 15px;
-    color: black;
+    @include themeText;
     @include focus;
   }
 }

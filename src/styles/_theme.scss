@@ -17,13 +17,15 @@
   --theme-input-background: #f2effe;
   --input-background-color: #f2effe;
   --input-placeholder-color: #cabdfc;
-  --logo-src: url('/logo-light.svg');
-  --logo-login: url('/logo-light.svg');
+  --logo-src: url('/logo-light-fix.png');
+  --logo-login: url('/logo-light-fix.png');
+  --background-blog: url('/blog-background.jpg');
   --animated-box-shadow-init: 0 4px 8px rgba(0, 0, 0, 0.1);
   --animated-box-shadow-animation: 0 8px 16px rgba(0, 0, 0, 0.2);
   --filter-line: #dfdfdf;
   --stroke-color: black;
   --date-color: #564f70;
+  --input-theme: #fdedf8;
 }
 
 :root[data-theme='dark'] {
@@ -43,13 +45,15 @@
   --theme-input-background: #37257b;
   --input-background-color: #f2effe;
   --input-placeholder-color: #7a5af8;
-  --logo-src: url('/logo-dark.svg');
-  --logo-login: url('/logo-purple.svg');
+  --logo-src: url('/logo-black-fix.png');
+  --logo-login: url('/logo-black-fix.png');
+  --background-blog: url('/blog-background-black.jpg');
   --animated-box-shadow-init: 0 4px 8px rgba(255, 255, 255, 0.117);
   --animated-box-shadow-animation: 0 8px 16px rgba(255, 255, 255, 0.782);
   --filter-line: #7a5af8;
   --stroke-color: white;
   --date-color: white;
+  --input-theme: #661d50;
 }
 
 body {

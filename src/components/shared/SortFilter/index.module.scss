@@ -11,7 +11,10 @@
   }
 
   &__container {
-    @include flex($dir: column);
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: left;
   }
 
   &__header {
@@ -60,6 +63,7 @@
     border: 1px solid $main-color;
     border-radius: 100px;
     transition: all 0.4s;
+    margin-left: 6px;
   }
 
   &__sort-inp {

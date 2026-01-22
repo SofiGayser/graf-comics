@@ -1,7 +1,4 @@
-import { Icon } from '@/assets/icons/type';
-import { ComponentType } from 'react';
-
 export interface PopularCardsProps {
   titleText: string;
-  Icon: ComponentType<Icon>;
+  iconSrc: string; // меняем на string для пути к изображению
 }

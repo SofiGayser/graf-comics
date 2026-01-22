@@ -5,16 +5,33 @@
   padding-bottom: 1.8em;
 }
 
+.footerlogo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-self: center;
+  gap: 20px;
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
 .icons {
   @include flex($gap: 1em);
   margin-bottom: 1.5em;
 }
 
 .links {
-  @include flex($wrap: wrap);
+  @include flex($dir: column);
   row-gap: 0.4em;
   column-gap: 1.27em;
   margin-bottom: 0.8em;
+
+  &__group {
+    @include flex($wrap: wrap);
+    row-gap: 0.4em;
+    column-gap: 1.27em;
+  }
 
   &__item {
     position: relative;
@@ -44,6 +61,17 @@
   @include themeFooterIcons;
 }
 
+.footer-logo {
+  width: 200px;
+  justify-content: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .dot {
   position: absolute;
   top: 50%;
@@ -54,4 +82,86 @@
   height: 2px;
   border-radius: 2px;
   background: #2d283e;
+}
+
+.blog {
+  margin-bottom: 1.1em;
+  padding-top: 1.2em;
+  padding-bottom: 1.5em;
+  overflow: hidden;
+  @include flex($wrap: nowrap, $gap: 0.4em);
+
+  &__header {
+    margin-bottom: 2em;
+    @include flex($gap: 0.8em);
+    @include themeSectionBackground;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 20px;
+    padding: 25px 20px;
+    gap: 10px;
+    margin-top: 50px;
+    @include mediaMax($device-M) {
+      text-align: center;
+      flex-direction: column;
+      display: flex;
+      align-items: center;
+    }
+    &-br {
+      @include mediaMin($device-M) {
+        display: none;
+      }
+    }
+  }
+
+  &__header-text {
+    @include themeText;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 100%;
+    @include mediaMax($device-M) {
+      font-weight: 600;
+      font-size: 0.8rem;
+      line-height: 15px;
+      @include themeText;
+    }
+    span {
+      color: #7a5af8;
+    }
+  }
+
+  &__header-link {
+    min-width: 140px;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 400;
+    line-height: normal;
+    text-decoration: none;
+    padding: 0.5em 1.3em;
+    background: $main-color;
+    color: white;
+    border-radius: 249px;
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 110%;
+    @include mediaMax($device-M) {
+      font-weight: 600;
+      font-size: 0.8rem;
+      line-height: 15px;
+      @include themeText;
+    }
+  }
+
+  &__link {
+    margin-bottom: 0.9em;
+  }
+
+  &__container {
+    padding-top: 1em;
+
+    @include mediaMin($device-M) {
+      padding-top: 4em;
+    }
+  }
 }

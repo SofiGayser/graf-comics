@@ -1,3 +1,4 @@
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { IChapter } from '@/components/Chapter/types';
 import { ITom } from '@/components/Tom/types';
 import { genresMap } from '@/constants';
@@ -8,7 +9,6 @@ import { Focus, Genre, Tag } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { NextResponse, type NextRequest } from 'next/server';
 import { v4 as uuid } from 'uuid';
-import { options } from '../auth/[...nextauth]/options';
 
 const cleanBase64 = (base64: string) => {
   return base64.replace(/^data:image\/\w+;base64,/, '').replace(/\s/g, '');
@@ -100,52 +100,240 @@ const updateComics = async (comics: IComics, userId: string): Promise<PreparedCo
   };
 };
 
-// 67078946e03b72cd20ffcdf5_name_cover_id
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    const { searchParams } = new URL(request.url);
+
+    const type = searchParams.get('type');
+    const myRequests = searchParams.get('myRequests') === 'true';
+
+    if (type === 'requests') {
+      if (!session?.user?.id) {
+        return NextResponse.json({ error: 'Требуется авторизация' }, { status: 401 });
+      }
+
+      const whereCondition = myRequests ? { authorId: session.user.id } : {};
+
+      const requests = await prisma.collaborationRequest.findMany({
+        where: whereCondition,
+        include: {
+          responses: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  avatar: true,
+                },
+              },
+            },
+          },
+          author: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const requestsWithFlag = requests.map((request) => ({
+        ...request,
+        isMine: request.author.id === session.user.id,
+      }));
+
+      return NextResponse.json(requestsWithFlag);
+    } else if (session?.user?.id) {
+      const comics = await prisma.comics.findMany({
+        where: { authorId: session.user.id },
+        include: {
+          toms: {
+            include: {
+              chapters: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      return NextResponse.json(comics);
+    } else {
+      const genre = searchParams.get('genre');
+      const focusParam = searchParams.get('focus');
+      const tag = searchParams.get('tag');
+      const statusParam = searchParams.get('status');
+      const rating = searchParams.get('rating');
+      const sort = searchParams.get('sort') || 'createdAt_desc';
+      const search = searchParams.get('search');
+
+      const where: any = {
+        isApproved: true,
+      };
+
+      if (genre) {
+        const genreEnum = genresMap[genre.toLowerCase()];
+        if (genreEnum) {
+          where.genres = { has: genreEnum };
+        }
+      }
+
+      if (focusParam) {
+        const focusEnum = genresMap[focusParam.toLowerCase()];
+        if (focusEnum) {
+          where.focus = { has: focusEnum };
+        }
+      }
+
+      if (tag) {
+        const tagEnum = genresMap[tag.toLowerCase()];
+        if (tagEnum) {
+          where.tags = { has: tagEnum };
+        }
+      }
+
+      if (statusParam) {
+        where.status = statusParam;
+      }
+
+      if (rating) {
+        where.rating = rating;
+      }
+
+      if (search) {
+        where.OR = [
+          { title: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
+      const [sortField, sortOrder] = sort.split('_');
+      const orderBy = { [sortField]: sortOrder };
+
+      const comics = await prisma.comics.findMany({
+        where,
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+          toms: {
+            include: {
+              chapters: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy,
+      });
+
+      return NextResponse.json(comics);
+    }
+  } catch (error) {
+    console.error('Error in GET /api/comics:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
 export const POST = async (request: NextRequest) => {
   try {
-    const session = await getServerSession(options);
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Требуется авторизация' }, { status: 401 });
+    }
 
-    const data: IComics = await request.json();
-    console.log(data);
-    const comics = await updateComics(data, session.user.id);
+    const data = await request.json();
+    console.log('Request data:', data);
 
-    const createdComics = await prisma.comics.create({
-      data: {
-        title: comics['title'],
-        banner: comics['banner'],
-        description: comics['description'],
-        rating: comics['rating'],
-        status: comics['status'],
-        covers: comics['covers'],
-        focus: comics['focus'],
-        genres: comics['genres'],
-        tags: comics['tags'],
-        toms: {
-          create: comics.toms.map((tom) => ({
-            title: tom.title,
-            chapters: {
-              create: tom.chapters.map((chapter) => ({
-                name: chapter.title,
-                likes: chapter.likes,
-                timeCode: chapter.timeCode,
-                images: chapter.images,
-                isRead: chapter.isRead,
-              })),
-            },
-          })),
+    if (data.isCollaborationRequest) {
+      const validRoles = ['художник', 'автор', 'колорист', 'лайн-художник', 'верстальщик', 'переводчик'];
+
+      const receivedRoles = (data.roles || [])
+        .map((role: string | { text: string }) => (typeof role === 'string' ? role : role.text))
+        .filter((role: string) => validRoles.includes(role));
+
+      if (receivedRoles.length === 0) {
+        return NextResponse.json({ error: 'Укажите хотя бы одну допустимую роль' }, { status: 400 });
+      }
+
+      const genres = (data.genres || [])
+        .map((genre) => {
+          const genreText = (typeof genre === 'string' ? genre : genre.text).toLowerCase();
+          return genresMap[genreText] as Genre;
+        })
+        .filter(Boolean);
+
+      const tags = (data.tags || [])
+        .map((tag) => {
+          const tagText = (typeof tag === 'string' ? tag : tag.text).toLowerCase();
+          return genresMap[tagText] as Tag;
+        })
+        .filter(Boolean);
+
+      if (!genres.length || !tags.length) {
+        return NextResponse.json({ error: 'Необходимо указать жанры и теги' }, { status: 400 });
+      }
+
+      const requestData = {
+        title: data.title,
+        description: data.description,
+        cover: data.covers?.[0] || null,
+        roles: receivedRoles,
+        genres: { set: genres },
+        tags: { set: tags },
+        author: { connect: { id: session.user.id } },
+      };
+
+      console.log('Creating with:', requestData);
+
+      const collaborationRequest = await prisma.collaborationRequest.create({
+        data: requestData,
+      });
+
+      return NextResponse.json(collaborationRequest);
+    } else {
+      const comics = await updateComics(data, session.user.id);
+
+      const createdComics = await prisma.comics.create({
+        data: {
+          title: comics.title,
+          banner: comics.banner,
+          description: comics.description,
+          rating: comics.rating,
+          status: comics.status,
+          covers: comics.covers,
+          focus: { set: comics.focus },
+          genres: { set: comics.genres },
+          tags: { set: comics.tags },
+          toms: {
+            create: comics.toms.map((tom) => ({
+              title: tom.title,
+              chapters: {
+                create: tom.chapters.map((chapter) => ({
+                  name: chapter.title,
+                  likes: chapter.likes,
+                  timeCode: chapter.timeCode,
+                  images: chapter.images,
+                  isRead: chapter.isRead,
+                })),
+              },
+            })),
+          },
+          author: { connect: { id: session.user.id } },
         },
-        authorId: session.user.id,
-      },
-    });
+      });
 
-    return NextResponse.json(createdComics);
+      return NextResponse.json(createdComics);
+    }
   } catch (error) {
-    console.log(error);
-    return NextResponse.json(
-      { message: error },
-      {
-        status: 500,
-      },
-    );
+    console.error('Error in POST /api/comics:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 };

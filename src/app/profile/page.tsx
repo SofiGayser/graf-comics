@@ -1,17 +1,23 @@
-import { options } from '@/app/api/auth/[...nextauth]/options';
+'use client';
+
 import Login from '@/components/Login';
 import ProfileAuthor from '@/components/ProfileAuthor';
 import ProfileReader from '@/components/ProfileReader';
-import { NextPage } from 'next';
-import { getServerSession } from 'next-auth';
+import { RouterLoader } from '@/components/UI';
+import { useSession } from 'next-auth/react';
 
-const ProfilePage: NextPage = async () => {
-  const session = await getServerSession(options);
+const ProfilePage = () => {
+  const { status, data } = useSession();
 
-  if (!session) {
+  if (status === 'loading') {
+    return <RouterLoader />;
+  }
+
+  if (!data) {
     return <Login />;
   }
-  return session.user.role === 'AUTHOR' ? <ProfileAuthor /> : <ProfileReader />;
+
+  return data.user.role === 'AUTHOR' ? <ProfileAuthor /> : <ProfileReader />;
 };
 
 export default ProfilePage;
